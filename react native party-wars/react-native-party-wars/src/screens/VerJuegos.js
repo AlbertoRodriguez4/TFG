@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 let idSala = 0;
 
@@ -32,10 +32,17 @@ const ViewGamesScreen = ({ route }) => {
   const handleCrearJuego = () => {
     navigation.navigate('CrearJuego', { idNavigationJuegos: salaId });
   };
-
+  const handleCrearSala = () => {
+    Alert.alert('Sala Creada', 'Sala creada correctamente', [
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('Main'), // Redirige a la pantalla principal
+      }
+    ]);
+  };
   const handleAddGame = async (juegoId) => {
     try {
-      console.log (idSala, juegoId);
+      console.log(idSala, juegoId);
       const response = await fetch(`http://192.168.1.90:3000/salas/${idSala}/juegos/${juegoId}`, {
         method: 'POST',
         headers: {
@@ -86,6 +93,8 @@ const ViewGamesScreen = ({ route }) => {
         renderItem={renderGameItem}
         keyExtractor={(item) => item.id.toString()}
       />
+      <Button title="Crear Sala" onPress={handleCrearSala} />
+
       <Text style={{ marginVertical: 10 }}>¿No ves ningún juego que te convenza? <Text style={{ color: 'blue' }} onPress={handleCrearJuego}>¡Crea el tuyo!</Text></Text>
     </View>
   );

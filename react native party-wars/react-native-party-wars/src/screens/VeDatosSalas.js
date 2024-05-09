@@ -53,7 +53,7 @@ const VeDatosSalas = ({ route }) => {
   const handleJoinParty = async () => {
     try {
       const { salaId } = route.params; // Obtener el ID de la sala del parámetro de ruta
-      const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${userData.id}`, {
+      const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${userData.id}`, { //insertar usuario en la sala
         method: 'POST',
       });
       if (response.ok) {
