@@ -1,4 +1,3 @@
-// Juego.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { Pregunta } from "./pregunta.entity";
 
@@ -21,6 +20,10 @@ export class Juego {
 
     @Column({ length: 255 })
     normasJuego: string;
+
+    // Agregar el campo "premium" de tipo booleano
+    @Column({ default: false })
+    premium: boolean;
 
     @ManyToMany(() => Pregunta)
     @JoinTable()

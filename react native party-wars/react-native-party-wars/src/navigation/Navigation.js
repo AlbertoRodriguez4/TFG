@@ -9,6 +9,9 @@ import CrearJuego from '../screens/CrearJuego';
 import CrearSala from '../screens/CrearSala';
 import VerJuegos from '../screens/VerJuegos';
 import VerDatosSalas from '../screens/VeDatosSalas';
+import PlanPremium from '../screens/PlanPremium';
+import PlanBusiness from '../screens/PlanBusiness';
+import SalasUsuarioUnido from '../screens/SalasUsuarioUnido';
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
@@ -98,6 +101,39 @@ export default function Navigation() {
           <Icon name="gamepad" color={color} size={size} />
         ),
       }}
+      />
+      <Tab.Screen
+        name="PlanPremium" // Agrega la pantalla PlanPremium
+        component={PlanPremium}
+        options={{
+          tabBarLabel: 'Plan Premium',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="star" color={color} size={size} /> // Puedes cambiar el icono según tus preferencias
+          ),
+          tabBarVisible: showTabs,
+        }}
+      />
+      <Tab.Screen
+        name="PlanBusiness"
+        component={PlanBusiness}
+        options={{
+          tabBarLabel: 'Plan Business',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="star" color={color} size={size} />
+          ),
+          tabBarVisible: showTabs,
+        }}
+      />
+      <Tab.Screen
+        name="SalasUsuarioUnido"
+        component={SalasUsuarioUnido}
+        options={{
+          tabBarLabel: 'Mis Salas',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="gamepad" color={color} size={size} />
+          ),
+          tabBarVisible: showTabs,
+        }}
       />
     </Tab.Navigator>
   );

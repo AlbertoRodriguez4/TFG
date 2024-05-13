@@ -25,7 +25,10 @@ export class UsuarioService {
     return createdUsuario;
   }
 
-  async update(id: number, usuarioData: Partial<Usuario>): Promise<Usuario | undefined> {
+  async update(
+    id: number,
+    usuarioData: Partial<Usuario>,
+  ): Promise<Usuario | undefined> {
     const usuario = await this.findOne(id);
     if (!usuario) {
       return undefined;
@@ -38,13 +41,17 @@ export class UsuarioService {
     await this.usuarioRepository.delete(id);
   }
 
-  async findByEmailAndPassword(email: string, password: string): Promise<Usuario | null> {
-    const usuario = await this.usuarioRepository.createQueryBuilder("usuario")
-      .where("usuario.email = :email", { email })
-      .andWhere("usuario.password = :password", { password })
-      .andWhere("usuario.id IS NOT NULL") // Chequea si el id es un número
+  async findByEmailAndPassword(
+    email: string,
+    password: string,
+  ): Promise<Usuario | null> {
+    const usuario = await this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .where('usuario.email = :email', { email })
+      .andWhere('usuario.password = :password', { password })
+      .andWhere('usuario.id IS NOT NULL') // Chequea si el id es un número
       .getOne();
-  
+
     if (!usuario) {
       return null;
     } else {
@@ -52,7 +59,16 @@ export class UsuarioService {
       return usuario;
     }
   }
+  async updatePlan(id: number, plan: string): Promise<Usuario | undefined> {
+    //url para updatear : http://192.168.1.90:3000/usuarios/6/plan
+    /*{
+  "plan": "Premium"
+    }*/
+    const usuario = await this.findOne(id);
+    if (!usuario) {
+      return undefined;
+    }
+    usuario.plan = plan;
+    return await this.usuarioRepository.save(usuario);
+  }
 }
-
-
-

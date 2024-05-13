@@ -69,7 +69,11 @@ export class SalaController {
   async findAllUsuariosBySalaId(@Param('id') salaId: string): Promise<any[]> {
     return this.salaService.findAllUsuariosBySalaId(parseInt(salaId, 10));
   }
-
+ 
+  @Get('usuarios/:usuarioId/salas')
+  async findSalasAndInfoByUsuarioId(@Param('usuarioId') usuarioId: string): Promise<Sala[]> {
+    return this.salaService.findAllInfoByUsuarioId(parseInt(usuarioId, 10));
+  }
 }
 
 

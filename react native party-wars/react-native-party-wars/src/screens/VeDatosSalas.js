@@ -3,8 +3,7 @@ import { View, Text, FlatList, StyleSheet, Alert, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VeDatosSalas = ({ route }) => {
-  const [juegos, setJuegos] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
+  const [datos, setDatos] = useState([]);
   const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
   const [userData, setUserData] = useState(null); // Estado para almacenar los datos del usuario
 
@@ -13,18 +12,19 @@ const VeDatosSalas = ({ route }) => {
       loadUserData();
       try {
         const { salaId } = route.params; // Obtener el ID de la sala del parámetro de ruta
-        
-        // Mostrar un alert con el ID recibido al entrar en la pantalla
-        Alert.alert('ID de la Sala', `ID recibido: ${salaId}`);
+
         // Obtener juegos de la sala
         const juegosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos`);
         const juegosData = await juegosResponse.json();
-        setJuegos(juegosData);
 
         // Obtener usuarios de la sala
         const usuariosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios`);
         const usuariosData = await usuariosResponse.json();
-        setUsuarios(usuariosData);
+
+        // Fusionar juegos y usuarios en una sola lista
+        const mergedData = [...juegosData, ...usuariosData];
+
+        setDatos(mergedData);
 
         // Obtener el email del usuario logueado desde AsyncStorage
         const userEmail = await AsyncStorage.getItem('userEmail');
@@ -66,48 +66,41 @@ const VeDatosSalas = ({ route }) => {
     }
   };
 
-  // Comprobar si el email del usuario logueado ya está en la lista de usuarios de la sala
-  const isUserAlreadyInParty = usuarios.some(user => user.email === loggedInUserEmail);
-
   return (
+    
     <View style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Juegos de la Sala</Text>
-        <FlatList
-          data={juegos}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text>Nombre: {item.nombre}</Text>
-              <Text>Propiedad del Juego: {item.propiedadJuego}</Text>
-              <Text>Descripción del Juego: {item.descripcionJuego}</Text>
-              <Text>Categoría del Juego: {item.categoriaJuego}</Text>
-              <Text>Normas del Juego: {item.normasJuego}</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Usuarios en la Sala</Text>
-        <FlatList
-          data={usuarios}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text>Nombre: {item.nome}</Text>
-              <Text>Email: {item.email}</Text>
-              <Text>Plan: {item.plan}</Text>
-              <Text>Descripción Personal: {item.descripcionPersonal}</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      </View>
+      <FlatList
+        data={datos}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            {item.nombre && (
+              <>
+                <Text>Nombre: {item.nombre}</Text>
+                <Text>Propiedad del Juego: {item.propiedadJuego}</Text>
+                <Text>Descripción del Juego: {item.descripcionJuego}</Text>
+                <Text>Categoría del Juego: {item.categoriaJuego}</Text>
+                <Text>Normas del Juego: {item.normasJuego}</Text>
+              </>
+            )}
+            {item.nome && (
+              <>
+                <Text>Nombre: {item.nome}</Text>
+                <Text>Email: {item.email}</Text>
+                <Text>Plan: {item.plan}</Text>
+                <Text>Descripción Personal: {item.descripcionPersonal}</Text>
+              </>
+            )}
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
       
       {/* Mostrar el botón solo si el usuario no está en la fiesta y si hay datos del usuario */}
-      {!isUserAlreadyInParty && userData && <Button title="Unirse a la fiesta" onPress={handleJoinParty} />}
+        <Button title="Unirse a la fiesta" onPress={handleJoinParty} />
+      
     </View>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -115,14 +108,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
   item: {
     backgroundColor: '#f9f9f9',

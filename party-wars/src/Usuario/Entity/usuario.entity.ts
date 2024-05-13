@@ -1,8 +1,15 @@
-// Usuario.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
 import { Sala } from "./../../Sala/Entity/sala.entity";
 import { Evento } from "../../Evento/Entity/evento.entity";
-import {Buffer} from 'buffer';
+import { Buffer } from 'buffer';
+
+// Definir un tipo de enumeración para los planes permitidos
+enum Plan {
+  BASICO = 'Básico',
+  PREMIUM = 'Premium',
+  BUSINESS = 'Business'
+}
+
 @Entity()
 export class Usuario {
   @PrimaryGeneratedColumn()
@@ -17,7 +24,12 @@ export class Usuario {
   @Column({ length: 255 })
   password: string;
 
-  @Column({ length: 255 })
+  // Utilizar el tipo de enumeración para limitar los valores permitidos
+  @Column({
+    type: 'enum',
+    enum: Plan,
+    default: Plan.BASICO
+  })
   plan: string;
 
   @Column({ length: 255 })

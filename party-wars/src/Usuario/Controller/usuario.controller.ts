@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { Usuario } from '../Entity/usuario.entity';
 import { UsuarioService } from '../Service/usuario.service';
 
@@ -18,12 +27,15 @@ export class UsuarioController {
 
   @Post()
   create(@Body() usuarioData: Partial<Usuario>): Promise<Usuario> {
-    console.log("Datos del usuario" + usuarioData.imagen)
+    console.log('Datos del usuario' + usuarioData.imagen);
     return this.usuarioService.create(usuarioData);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() usuarioData: Partial<Usuario>): Promise<Usuario | undefined> {
+  update(
+    @Param('id') id: string,
+    @Body() usuarioData: Partial<Usuario>,
+  ): Promise<Usuario | undefined> {
     return this.usuarioService.update(parseInt(id, 10), usuarioData);
   }
 
@@ -39,6 +51,11 @@ export class UsuarioController {
     return this.usuarioService.findByEmailAndPassword(correo, password);
   }
   
-
-
+  @Put(':id/plan')
+  updatePlan(
+    @Param('id') id: string,
+    @Body('plan') plan: string,
+  ): Promise<Usuario | undefined> {
+    return this.usuarioService.updatePlan(parseInt(id, 10), plan);
+  }
 }

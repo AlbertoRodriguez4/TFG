@@ -114,4 +114,11 @@ export class SalaService {
     });
     return sala ? sala.usuarios : [];
   }
+ 
+  async findAllInfoByUsuarioId(usuarioId: number): Promise<Sala[]> { //ver la info de las salas: http://192.168.1.90:3000/salas/usuarios/6/salas
+    return await this.salaRepository.createQueryBuilder("sala")
+      .innerJoinAndSelect("sala.usuarios", "usuario")
+      .where("usuario.id = :usuarioId", { usuarioId })
+      .getMany();
+  }
 }
