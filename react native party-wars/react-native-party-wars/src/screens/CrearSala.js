@@ -20,24 +20,9 @@ const CreateRoomScreen = () => {
   const handleVerJuegos = () => {
     navigation.navigate('VerJuegos', { idNavigationJuegos }); // Pasar el ID como un objeto
   };
-  const loadUserData = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (userData) {
-        const { id } = JSON.parse(userData);
-        setId(id);
-      }
-      console.log("el id del usuario es " + id);
-    } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error);
-    }
-  };
-
-
-
   const handleCreateRoom = async () => {
     try {
-      loadUserData();
+      await loadUserData(); // Espera a que se carguen los datos del usuario
       const response = await fetch('http://192.168.1.90:3000/salas', {
         method: 'POST',
         headers: {
@@ -74,13 +59,25 @@ const CreateRoomScreen = () => {
       setNumeroParticipantes('');
       setFecha(''); // Limpiar el estado de la fecha
       handleVerJuegos();
-      handleJoinParty(); // Llamar a handleJoinParty aquí
     } catch (error) {
       console.error('Error al crear la sala:', error);
       Alert.alert('Error', 'Ocurrió un error al crear la sala. Por favor, inténtalo de nuevo.');
     }
   };
 
+  const loadUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        const { id } = JSON.parse(userData);
+        setId(id);
+        console.log("el id del usuario es " + id);
+        handleJoinParty(); // Llama a handleJoinParty después de obtener el id del usuario
+      }
+    } catch (error) {
+      console.error('Error al cargar los datos del usuario:', error);
+    }
+  };
   const handleJoinParty = async () => {
     try {
       const response = await fetch(`http://192.168.1.90:3000/salas/${idNavigationJuegos}/usuarios/${id}`, { //insertar usuario en la sala

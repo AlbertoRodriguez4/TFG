@@ -1,36 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, FlatList, StyleSheet } from "react-native";
+import { View, Text, Button, FlatList, StyleSheet, Alert } from "react-native";
 
 const IniciarJuegos = ({ route }) => {
-    const { salaId } = route.params; // Obtén el ID de la sala desde los parámetros de la ruta
-    const [juegoId, setJuegoId] = useState(null); // Estado para almacenar el ID del juego
-    const [juego, setJuego] = useState(null);
+    const { salaId } = route.params;
+    const [juegos, setJuegos] = useState([]);
+    const [juegoIndex, setJuegoIndex] = useState(0);
     const [preguntas, setPreguntas] = useState([]);
-    const [preguntaIndex, setPreguntaIndex] = useState(0); // Estado para almacenar el índice de la pregunta actual
+    const [preguntaIndex, setPreguntaIndex] = useState(0);
 
     useEffect(() => {
-        fetchJuego();
+        fetchJuegos();
     }, []);
 
-    const fetchJuego = async () => {
+    const fetchJuegos = async () => {
         try {
             const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos`);
             const data = await response.json();
-            // Supongamos que obtenemos el primer juego de la lista de juegos de la sala
-            const primerJuego = data[0];
-            setJuegoId(primerJuego.id); // Almacenamos el ID del juego
-            setJuego(primerJuego);
-            fetchPreguntasDeJuego(primerJuego.id); // Llamamos a la función para obtener las preguntas del juego
+            setJuegos(data);
         } catch (error) {
-            console.error('Error al obtener el juego:', error);
+            console.error('Error al obtener los juegos:', error);
         }
     };
 
     const fetchPreguntasDeJuego = async (juegoId) => {
         try {
+            console.log(juegoId);
             const response = await fetch(`http://192.168.1.90:3000/juegos/${juegoId}/preguntas`);
             const data = await response.json();
-            console.log(data);
             setPreguntas(data);
         } catch (error) {
             console.error('Error al obtener las preguntas del juego:', error);
@@ -38,19 +34,71 @@ const IniciarJuegos = ({ route }) => {
     };
 
     const avanzarPregunta = () => {
-        setPreguntaIndex(prevIndex => prevIndex + 1); // Avanzamos al índice de la siguiente pregunta
+        if (preguntaIndex < preguntas.length - 1) {
+            setPreguntaIndex(prevIndex => prevIndex + 1);
+        }
     };
+
+    const siguienteJuego = () => {
+        if (juegoIndex < juegos.length - 1) {
+            setJuegoIndex(prevIndex => prevIndex + 1);
+            setPreguntaIndex(0);
+            fetchPreguntasDeJuego(juegos[juegoIndex + 1].id);
+        } else {
+            Alert.alert('Party wars terminado', 'Gracias por jugar', [
+                {
+                    text: 'OK',
+                    onPress: () => { },
+                }
+            ]);
+        }
+    };
+
+    useEffect(() => {
+        if (juegos.length > 0) {
+            fetchPreguntasDeJuego(juegos[juegoIndex].id);
+        } else {
+            // Si no hay juegos disponibles, muestra un mensaje de error
+            Alert.alert('Error', 'No hay juegos disponibles');
+        }
+    }, [juegoIndex, juegos]);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Juego: {juego ? juego.nombre : ""}</Text>
-            <Text style={styles.subtitle}>Preguntas:</Text>
-            <View style={styles.preguntaContainer}>
-                <Text>{preguntas.length > 0 ? preguntas[preguntaIndex].pregunta : "Cargando pregunta..."}</Text>
-            </View>
-            <Button title="Avanzar" onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1} />
+            <Text style={styles.title}>Juego: {juegos[juegoIndex] ? juegos[juegoIndex].nombre : ""}</Text>
+            {preguntas.length > 0 ? (
+                <View>
+                    <Text style={styles.subtitle}>Preguntas:</Text>
+                    <View style={styles.preguntaContainer}>
+                        <Text>{preguntas[preguntaIndex].pregunta}</Text>
+                        <Button title="Avanzar" onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1} />
+                    </View>
+                    {preguntaIndex >= preguntas.length - 1 && (
+                        <View style={styles.avanzarContainer}>
+                            <Text>El juego ya ha acabado, ¿Quiere pasar al siguiente juego?</Text>
+                            <Button title={juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"} onPress={siguienteJuego} />
+                        </View>
+                    )}
+                </View>
+            ) : (
+                <View>
+                    <Text style={styles.subtitle}>Descripción:</Text>
+                    <Text>{juegos[juegoIndex] ? juegos[juegoIndex].descripcionJuego : "Cargando descripción..."}</Text>
+                    <Text style={styles.subtitle}>Normas:</Text>
+                    <Text>{juegos[juegoIndex] ? juegos[juegoIndex].normasJuego : "Cargando normas..."}</Text>
+                    {/* Si no hay preguntas, permite avanzar al siguiente juego */}
+                    <View style={styles.avanzarContainer}>
+                        <Text>El juego no tiene preguntas, ¿Quiere pasar al siguiente juego?</Text>
+                        <Button title={juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"} onPress={siguienteJuego} />
+                    </View>
+                </View>
+            )}
         </View>
     );
+
+
+
+
 };
 
 const styles = StyleSheet.create({
@@ -77,9 +125,12 @@ const styles = StyleSheet.create({
         borderColor: '#cccccc',
         borderRadius: 10,
     },
+    avanzarContainer: {
+        alignItems: 'center',
+        marginTop: 20,
+    },
 });
 
 export default IniciarJuegos;
-
 
 
