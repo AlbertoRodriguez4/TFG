@@ -8,10 +8,12 @@ const SalasUsuario = ({ route }) => {
     const [id, setId] = useState(0);
     const [salasPrimero, setSalasPrimero] = useState([]);
     const [salasNoPrimero, setSalasNoPrimero] = useState([]);
+    const [currentDay, setCurrentDay] = useState('');
     const navigation = useNavigation(); // Inicializa el hook useNavigation
 
     useEffect(() => {
         loadUserData();
+        setCurrentDay(new Date().toISOString().split('T')[0]); // Obtener la fecha actual
     }, []);
 
     useEffect(() => {
@@ -58,7 +60,7 @@ const SalasUsuario = ({ route }) => {
         try {
             const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios`);
             const usuarios = await response.json();
-            
+            console.log(currentDay)
             // Guardar las salas en arrays separados dependiendo de si eres el primero o no
             if (usuarios[0] && usuarios[0].id === id) {
                 setSalasPrimero(prevState => [...prevState, salaId]);
@@ -93,8 +95,10 @@ const SalasUsuario = ({ route }) => {
                     <Text style={styles.salaEdades}>Edad mínima: {sala.edadMinima} - Edad máxima: {sala.edadMaxima}</Text>
                     <Text style={styles.salaLocalizacion}>Localización: {sala.localizacionSala}</Text>
                     <Text style={styles.salaParticipantes}>Participantes: {sala.numeroParticipantes}</Text>
-                    {/* Mostrar botón solo si el usuario es el primero en la sala */}
-                    {salasPrimero.includes(sala.id) && (
+                    <Text style={styles.salaParticipantes}>Fecha: {sala.fecha}</Text>
+
+                    {/* Mostrar botón si el usuario es el primero en la sala o si el día actual es el mismo que el día de la sala */}
+                    {(salasPrimero.includes(sala.id) && sala.fecha === currentDay) && (
                         <Button title="Iniciar Party Wars" onPress={() => handleIniciarPartyWars(sala.id)} />
                     )}
                 </View>
