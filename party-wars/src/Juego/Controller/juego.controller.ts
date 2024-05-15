@@ -45,4 +45,5 @@ export class JuegosController {
   findPreguntasByJuegoId(@Param('id') juegoId: number): Promise<Pregunta[]> {
     return this.juegosService.findPreguntasByJuegoId(juegoId);
   }
+  
 }

@@ -74,6 +74,14 @@ export class SalaController {
   async findSalasAndInfoByUsuarioId(@Param('usuarioId') usuarioId: string): Promise<Sala[]> {
     return this.salaService.findAllInfoByUsuarioId(parseInt(usuarioId, 10));
   }
+  @Get('tematica/:tematica')
+  async findByTematica(@Param('tematica') tematica: string) {
+    return await this.salaService.findByTematica(tematica);
+  }
+  @Get('nombre/:nombre')
+  async findByNombre(@Param('nombre') nombre: string) {
+    return await this.salaService.findByNombre(nombre);
+  }
 }
 
 

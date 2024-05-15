@@ -121,4 +121,10 @@ export class SalaService {
       .where("usuario.id = :usuarioId", { usuarioId })
       .getMany();
   }
+  async findByTematica(tematica: string): Promise<Sala[]> {
+    return await this.salaRepository.find({ where: { tematicaSala: tematica } });
+  }
+  async findByNombre(nombre: string): Promise<Sala[]> {
+    return await this.salaRepository.find({ where: { nombre: nombre } });
+  }
 }
