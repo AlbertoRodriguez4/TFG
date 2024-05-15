@@ -29,6 +29,9 @@ export class Sala {
   @Column()
   numeroParticipantes: string;
 
+  @Column({ type: "date", nullable: true }) // Modificación para permitir valores nulos en 'fecha'
+  fecha: Date | null; // Debes usar 'Date | null' para indicar que 'fecha' puede ser nula
+
   @ManyToMany(() => Juego)
   @JoinTable({
     name: "sala_juego",
