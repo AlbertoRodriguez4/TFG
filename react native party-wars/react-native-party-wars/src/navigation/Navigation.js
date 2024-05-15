@@ -12,6 +12,7 @@ import VerDatosSalas from '../screens/VeDatosSalas';
 import PlanPremium from '../screens/PlanPremium';
 import PlanBusiness from '../screens/PlanBusiness';
 import SalasUsuarioUnido from '../screens/SalasUsuarioUnido';
+import IniciarJuegos from '../screens/IniciarJuegos';
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
@@ -67,20 +68,20 @@ export default function Navigation() {
       />
       <Tab.Screen
         name="CrearSala"
-        component = {CrearSala}
-        options ={{
+        component={CrearSala}
+        options={{
           tabBarLabel: 'Crear Sala',
           tabBarIcon: ({ color, size }) => (
             <Icon name="plus" color={color} size={size} />
           ),
         }}
       />
-      <Tab.Screen 
-      name = "CrearJuego"
-      component = {CrearJuego}
-      options = {{
-        tabBarLabel: 'Crear Juego',
-      }}
+      <Tab.Screen
+        name="CrearJuego"
+        component={CrearJuego}
+        options={{
+          tabBarLabel: 'Crear Juego',
+        }}
       />
       <Tab.Screen
         name="VerJuegos"
@@ -93,14 +94,14 @@ export default function Navigation() {
         }}
       />
       <Tab.Screen
-      name = "VerDatosSalas"
-      component = {VerDatosSalas}
-      options = {{
-        tabBarLabel: 'Ver Salas',
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="gamepad" color={color} size={size} />
-        ),
-      }}
+        name="VerDatosSalas"
+        component={VerDatosSalas}
+        options={{
+          tabBarLabel: 'Ver Salas',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="gamepad" color={color} size={size} />
+          ),
+        }}
       />
       <Tab.Screen
         name="PlanPremium" // Agrega la pantalla PlanPremium
@@ -133,6 +134,17 @@ export default function Navigation() {
             <Icon name="gamepad" color={color} size={size} />
           ),
           tabBarVisible: showTabs,
+        }}
+      />
+      <Tab.Screen
+        name="IniciarJuegos"
+        component={IniciarJuegos}
+        options={{
+          tabBarLabel: 'Iniciar Juegos',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="gamepad" color={color} size={size} />
+
+          )
         }}
       />
     </Tab.Navigator>

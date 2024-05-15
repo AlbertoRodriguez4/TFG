@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, Alert } from 'react-native'; // Importa Alert de react-native
+import { View, Text, StyleSheet, ScrollView, Button, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native'; // Importa el hook useNavigation
 
 const SalasUsuario = ({ route }) => {
     const [salas, setSalas] = useState([]);
     const [id, setId] = useState(0);
     const [salasPrimero, setSalasPrimero] = useState([]);
     const [salasNoPrimero, setSalasNoPrimero] = useState([]);
+    const navigation = useNavigation(); // Inicializa el hook useNavigation
 
     useEffect(() => {
         loadUserData();
@@ -76,7 +78,8 @@ const SalasUsuario = ({ route }) => {
     };
 
     const handleIniciarPartyWars = (salaId) => {
-        Alert.alert('ID de la sala', `El ID de la sala es: ${salaId}`);
+        // Navegar a la pantalla IniciarJuegos y pasar el ID de la sala como parámetro
+        navigation.navigate('IniciarJuegos', { salaId });
     };
 
     return (
