@@ -22,7 +22,7 @@ const CreateRoomScreen = () => {
   };
   const handleCreateRoom = async () => {
     try {
-      await loadUserData(); // Espera a que se carguen los datos del usuario
+      loadUserData(); // Espera a que se carguen los datos del usuario
       const response = await fetch('http://192.168.1.90:3000/salas', {
         method: 'POST',
         headers: {
@@ -80,12 +80,12 @@ const CreateRoomScreen = () => {
   };
   const handleJoinParty = async () => {
     try {
+      console.log("me he unido a la sala " + idNavigationJuegos  + "y soy el usuario con id "+id);
       const response = await fetch(`http://192.168.1.90:3000/salas/${idNavigationJuegos}/usuarios/${id}`, { //insertar usuario en la sala, no esta pillando ningun id
         method: 'POST',
       });
       if (response.ok) {
         Alert.alert('Éxito', 'Te has unido a la fiesta correctamente');
-        console.log("me he unido a la sala " + idNavigationJuegos  + "y soy el usuario con id "+id);
       } else {
         throw new Error('Error al unirse a la fiesta');
       }
