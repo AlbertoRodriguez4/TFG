@@ -27,6 +27,7 @@ const SalasUsuario = ({ route }) => {
             const userData = await AsyncStorage.getItem('userData');
             if (userData) {
                 const { id } = JSON.parse(userData);
+                console.log(id);
                 setId(id);
             }
         } catch (error) {
