@@ -15,7 +15,7 @@ const CreateRoomScreen = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null); // Estado para almacenar los datos del usuario
   const [id, setId] = useState(0);
-
+  
   let idNavigationJuegos = 0; // Cambiando de constante a variable
   const handleVerJuegos = () => {
     navigation.navigate('VerJuegos', { idNavigationJuegos }); // Pasar el ID como un objeto
@@ -78,9 +78,10 @@ const CreateRoomScreen = () => {
       console.error('Error al cargar los datos del usuario:', error);
     }
   };
+  var traervariable = idNavigationJuegos;
   const handleJoinParty = async () => {
     try {
-      console.log("me he unido a la sala " + idNavigationJuegos  + "y soy el usuario con id "+id);
+      console.log("me he unido a la sala " + traervariable  + "y soy el usuario con id "+id);
       const response = await fetch(`http://192.168.1.90:3000/salas/${idNavigationJuegos}/usuarios/${id}`, { //insertar usuario en la sala, no esta pillando ningun id
         method: 'POST',
       });

@@ -31,4 +31,12 @@ export class EventoController {
   remove(@Param('id') id: string): Promise<void> {
     return this.eventoService.remove(parseInt(id, 10));
   }
+  @Post(':id/usuarios/:usuarioId')
+  async addUsuarioToEvento(@Param('id') eventoId: string, @Param('usuarioId') usuarioId: string): Promise<void> {
+    await this.eventoService.addUsuarioToEvento(parseInt(eventoId, 10), parseInt(usuarioId, 10));
+  }
+  @Get(':id/usuarios')
+  async findAllUsuariosByEventoId(@Param('id') eventoId: string): Promise<any[]> {
+    return this.eventoService.findAllUsuariosByEventoId(parseInt(eventoId, 10));
+  }
 }

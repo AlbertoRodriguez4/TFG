@@ -61,7 +61,6 @@ const EditProfileScreen = ({ route }) => {
       }
 
       // Una vez actualizados los datos, puedes redirigir al usuario a una pantalla de confirmación o a otra pantalla
-      navigation.navigate('Profile');
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
       Alert.alert('Error', 'Ocurrió un error al actualizar el usuario. Por favor, inténtalo de nuevo.');

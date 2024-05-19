@@ -35,4 +35,23 @@ export class EventoService {
   async remove(id: number): Promise<void> {
     await this.eventoRepository.delete(id);
   }
+  async addUsuarioToEvento(eventoId: number, usuarioId: number): Promise<void> {
+    const evento = await this.eventoRepository.findOne({
+      where: { id: eventoId },
+      relations: ['usuarios'],
+    });
+    if (!evento) {
+      // Manejar el caso en que no se encuentre la sala
+      return;
+    }
+    evento.usuarios.push({ id: usuarioId } as any);
+    await this.eventoRepository.save(evento);
+  }
+  async findAllUsuariosByEventoId(eventoId: number): Promise<any[]> {
+    const evento = await this.eventoRepository.findOne({
+      where: { id: eventoId },
+      relations: ['usuarios'],
+    });
+    return evento ? evento.usuarios : [];
+  }
 }
