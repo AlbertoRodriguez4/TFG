@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'; // Importa el hook use
 
 const SalasUsuario = ({ route }) => {
     const [salas, setSalas] = useState([]);
+    const [eventos, setEventos] = useState([]); // Estado para almacenar los eventos
     const [id, setId] = useState(0);
     const [salasPrimero, setSalasPrimero] = useState([]);
     const [salasNoPrimero, setSalasNoPrimero] = useState([]);
@@ -19,6 +20,7 @@ const SalasUsuario = ({ route }) => {
     useEffect(() => {
         if (id !== 0) {
             fetchSalasUsuario();
+            fetchEventosUsuario(); // Llama a la función para cargar los eventos del usuario
         }
     }, [id]);
 
@@ -80,6 +82,17 @@ const SalasUsuario = ({ route }) => {
         }
     };
 
+    const fetchEventosUsuario = async () => {
+        try {
+            const response = await fetch(`http://192.168.1.90:3000/eventos/usuarios/${id}/eventos`);
+            const data = await response.json();
+            console.log(data);
+            setEventos(data);
+        } catch (error) {
+            console.error('Error al obtener los eventos del usuario:', error);
+        }
+    };
+
     const handleIniciarPartyWars = (salaId) => {
         // Navegar a la pantalla IniciarJuegos y pasar el ID de la sala como parámetro
         navigation.navigate('IniciarJuegos', { salaId });
@@ -102,6 +115,16 @@ const SalasUsuario = ({ route }) => {
                     {(salasPrimero.includes(sala.id) && sala.fecha === currentDay) && (
                         <Button title="Iniciar Party Wars" onPress={() => handleIniciarPartyWars(sala.id)} />
                     )}
+                </View>
+            ))}
+
+            {/* Mostrar los eventos a los que está apuntado el usuario */}
+            <Text style={styles.title}>Eventos del Usuario</Text>
+            {eventos.map((evento) => (
+                <View key={evento.id} style={styles.eventoContainer}>
+                    <Text style={styles.eventoNombre}>{evento.nombreSala}</Text>
+                    <Text style={styles.eventoDescripcion}>{evento.descripcionEnvento}</Text>
+                    <Text style={styles.eventoFecha}>Fecha: {evento.fechaEvento}</Text>
                 </View>
             ))}
         </ScrollView>
@@ -153,9 +176,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 5,
     },
+    eventoContainer: {
+        marginBottom: 20,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#cccccc',
+        borderRadius: 10,
+    },
+    eventoNombre: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    eventoDescripcion: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    eventoFecha: {
+        fontSize: 16,
+        marginBottom: 5,
+    },
 });
 
 export default SalasUsuario;
-
-
-
