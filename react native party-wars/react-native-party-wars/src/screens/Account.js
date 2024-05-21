@@ -17,6 +17,7 @@ const EditProfileScreen = ({ route }) => {
   useEffect(() => {
     // Cargar los datos del usuario al cargar la pantalla
     loadUserData();
+    console.log(id)
   }, []);
 
   const loadUserData = async () => {

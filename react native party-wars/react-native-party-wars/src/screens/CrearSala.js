@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const CreateRoomScreen = () => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -15,14 +16,18 @@ const CreateRoomScreen = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null); // Estado para almacenar los datos del usuario
   const [id, setId] = useState(0);
-  
-  let idNavigationJuegos = 0; // Cambiando de constante a variable
+  const [idNavigationJuegos, setIdNavigationJuegos] = useState(0); // Usar estado en lugar de variable local
+
+  useEffect(() => {
+    loadUserData(); // Cargar los datos del usuario cuando el componente se monta
+  }, []);
+
   const handleVerJuegos = () => {
     navigation.navigate('VerJuegos', { idNavigationJuegos }); // Pasar el ID como un objeto
   };
+
   const handleCreateRoom = async () => {
     try {
-      loadUserData(); // Espera a que se carguen los datos del usuario
       const response = await fetch('http://192.168.1.90:3000/salas', {
         method: 'POST',
         headers: {
@@ -45,10 +50,10 @@ const CreateRoomScreen = () => {
       }
 
       const data = await response.json(); // Obtener el cuerpo de la respuesta
-      idNavigationJuegos = data; // Asignar directamente el número devuelto
+      setIdNavigationJuegos(data); // Asignar el ID al estado
+
       Alert.alert('Sala Creada', 'La sala se ha creado exitosamente');
-      console.log('ID de la sala creada:', idNavigationJuegos);
-      // Imprimir el ID de la sala creada en la consola
+      console.log('ID de la sala creada:', data);
 
       setNombre('');
       setDescripcion('');
@@ -58,6 +63,7 @@ const CreateRoomScreen = () => {
       setLocalizacion('');
       setNumeroParticipantes('');
       setFecha(''); // Limpiar el estado de la fecha
+
       handleVerJuegos();
     } catch (error) {
       console.error('Error al crear la sala:', error);
@@ -71,18 +77,25 @@ const CreateRoomScreen = () => {
       if (userData) {
         const { id } = JSON.parse(userData);
         setId(id);
-        console.log("el id del usuario es " + id);
-        handleJoinParty(); // Llama a handleJoinParty después de obtener el id del usuario
+        alert("El ID del usuario es " + id);
+        console.log("El ID del usuario es " + id);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
     }
   };
-  var traervariable = idNavigationJuegos;
+
+  useEffect(() => {
+    if (idNavigationJuegos !== 0) {
+      handleJoinParty(); // Llamar a handleJoinParty cuando idNavigationJuegos se haya actualizado
+    }
+  }, [idNavigationJuegos]);
+
   const handleJoinParty = async () => {
     try {
-      console.log("me he unido a la sala " + traervariable  + "y soy el usuario con id "+id);
-      const response = await fetch(`http://192.168.1.90:3000/salas/${idNavigationJuegos}/usuarios/${id}`, { //insertar usuario en la sala, no esta pillando ningun id
+      loadUserData();
+      console.log("Me he unido a la sala " + idNavigationJuegos + " y soy el usuario con ID " + id);
+      const response = await fetch(`http://192.168.1.90:3000/salas/${idNavigationJuegos}/usuarios/${id}`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -94,6 +107,7 @@ const CreateRoomScreen = () => {
       console.error('Error al unirse a la fiesta:', error);
     }
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Crear Sala</Text>
@@ -148,7 +162,7 @@ const CreateRoomScreen = () => {
         onChangeText={setFecha}
         style={styles.input}
       />
-      <Button title="Confirmar Ajustes" onPress={() => { handleCreateRoom(); handleJoinParty(); }} />
+      <Button title="Confirmar Ajustes" onPress={handleCreateRoom} />
     </View>
   );
 };
