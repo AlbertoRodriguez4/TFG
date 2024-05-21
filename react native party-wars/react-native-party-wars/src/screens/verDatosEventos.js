@@ -1,0 +1,176 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, Button } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const VeDatosSalas = ({ route, navigation }) => {
+  const [evento, setEvento] = useState(null);
+  const [usuarios, setUsuarios] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [isUserInRoom, setIsUserInRoom] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [valor, setValor] = useState(0);
+  const [espaciosDisponibles, setEspaciosDisponibles] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await loadUserData();
+
+        const { eventoId } = route.params; // Obtener el ID del evento del parámetro de ruta
+        console.log(eventoId);
+
+        // Obtener datos del evento
+        const eventosResponse = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}`);
+        const eventosData = await eventosResponse.json();
+        
+        if (!eventosData || typeof eventosData !== 'object') {
+          throw new Error('La respuesta de los datos del evento no es válida');
+        }
+
+        // Obtener usuarios del evento
+        const usuariosResponse = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}/usuarios`);
+        const usuariosData = await usuariosResponse.json();
+        
+        if (!Array.isArray(usuariosData)) {
+          throw new Error('La respuesta de los datos de usuarios no es un array');
+        }
+
+        const userIds = usuariosData.map(user => user.id);
+        console.log("Cantidad de usuarios: " + usuariosData.length);
+
+        // Calcular la cantidad de espacios disponibles restando la cantidad de usuarios actuales del límite máximo de asistentes
+        const espaciosDisponibles = eventosData.cantidadAsistentes - usuariosData.length;
+        setEspaciosDisponibles(espaciosDisponibles);
+
+        // Establecer los datos de eventos y usuarios por separado
+        setEvento(eventosData);  // Eventos data is assumed to be a single object
+        setUsuarios(usuariosData);
+
+        // Verificar si el usuario está presente en el evento
+        const storedUserData = await AsyncStorage.getItem('userData');
+        if (storedUserData) {
+          const parsedUserData = JSON.parse(storedUserData);
+          if (userIds.includes(parsedUserData.id)) {
+            setIsLoading(false);
+            setIsUserInRoom(true);
+            setValor(1);
+          } else {
+            setIsUserInRoom(false);
+            setValor(0);
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar los datos del evento:', error.message);
+      }
+    };
+
+    fetchData();
+  }, [route.params]);
+
+  const loadUserData = async () => {
+    try {
+      const storedUserData = await AsyncStorage.getItem('userData');
+      if (storedUserData) {
+        setUserData(JSON.parse(storedUserData));
+      }
+    } catch (error) {
+      console.error('Error al cargar los datos del usuario:', error.message);
+    }
+  };
+
+  const handleJoinEvent = async () => {
+    try {
+      const { eventoId } = route.params;
+      const response = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}/usuarios/${userData.id}`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        Alert.alert('Éxito', 'Te has unido al evento correctamente');
+        setIsUserInRoom(true);
+        navigation.navigate("Main");
+      } else {
+        throw new Error('Error al unirse al evento');
+      }
+    } catch (error) {
+      console.error('Error al unirse al evento:', error.message);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Sección de eventos */}
+      {evento && (
+        <>
+          <Text style={styles.sectionTitle}>Eventos</Text>
+          <FlatList
+            data={[evento]}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Text>Nombre de la Sala: {item.nombreSala ? item.nombreSala : 'Nombre no disponible'}</Text>
+                <Text>Edad Mínima del Evento: {item.edadMinEvento}</Text>
+                <Text>Edad Máxima del Evento: {item.edadMaxEvento}</Text>
+                <Text>Localización: {item.localizacion}</Text>
+                <Text>Temática del Evento: {item.tematicaEvento}</Text>
+                <Text>Descripción del Evento: {item.descripcionEnvento}</Text>
+                <Text>Localización del Evento: {item.localizacionEvento}</Text>
+                <Text>Cantidad de Asistentes: {item.cantidadAsistentes}</Text>
+                <Text>Fecha del Evento: {item.fechaEvento}</Text>
+                <Text>Nombre de la Empresa Organizadora: {item.nombreEmpEvento}</Text>
+                <Text style={styles.espaciosDisponibles}>Espacios disponibles: {espaciosDisponibles}</Text>
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        </>
+      )}
+
+      {/* Sección de usuarios */}
+      <Text style={styles.sectionTitle}>Usuarios</Text>
+      <FlatList
+        data={usuarios}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Text>Nombre: {item.nome}</Text>
+            <Text>Email: {item.email}</Text>
+            <Text>Plan: {item.plan}</Text>
+            <Text>Descripción Personal: {item.descripcionPersonal}</Text>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+
+      {/* Mostrar el botón solo si el usuario no está en el evento y si hay datos del usuario */}
+      {valor === 0 && userData && (
+        <Button title="Unirse al evento" onPress={handleJoinEvent} />
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  item: {
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  espaciosDisponibles: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'green', // Puedes cambiar el color según tu preferencia
+  },
+  
+});
+
+export default VeDatosSalas;

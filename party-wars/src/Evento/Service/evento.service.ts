@@ -55,4 +55,10 @@ export class EventoService {
     });
     return evento ? evento.usuarios : [];
   }
+  async findAllInfoByUsuarioId(usuarioId: number): Promise<Evento[]> { //ver la info de las salas: http://192.168.1.90:3000/salas/usuarios/6/salas
+    return await this.eventoRepository.createQueryBuilder("evento")
+      .innerJoinAndSelect("evento.usuarios", "usuario")
+      .where("usuario.id = :usuarioId", { usuarioId })
+      .getMany();
+  }
 }

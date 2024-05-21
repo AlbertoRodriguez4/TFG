@@ -103,14 +103,14 @@ const Main = () => {
   );
 
   const renderEventoCard = ({ item }) => (
-    <TouchableOpacity  style={styles.card}>
+    <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })}  style={styles.card}>
       <Text style={styles.cardTitle}>{item.nombreSala}</Text>
       <Text style={styles.cardDescription}>{item.descripcionEvento}</Text>
       <Text style={styles.cardInfo}>Tematica: {item.tematicaEvento}</Text>
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinEvento}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxEvento}</Text>
       <Text style={styles.cardInfo}>Localización: {item.localizacionEvento}</Text>
-      <TouchableOpacity  style={styles.button}>
+      <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
         <Text style={styles.buttonText}>Ver Detalles</Text>
       </TouchableOpacity>
     </TouchableOpacity>

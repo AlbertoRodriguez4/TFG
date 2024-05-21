@@ -10,10 +10,11 @@ const CreateRoomScreen = () => {
     const [edadMaxEvento, setEdadMaxEvento] = useState('');
     const [localizacion, setLocalizacion] = useState('');
     const [tematicaEvento, setTematicaEvento] = useState('');
-    const [descripcionEvento, setDescripcionEvento] = useState('');
+    const [descripcionEnvento, setDescripcionEnvento] = useState('');
     const [localizacionEvento, setLocalizacionEvento] = useState('');
     const [cantidadAsistentes, setCantidadAsistentes] = useState('');
     const [fechaEvento, setFechaEvento] = useState('');
+    const [nombreEmpEvento, setNombreEmpEvento] = useState('');
     const navigation = useNavigation();
     const [userData, setUserData] = useState(null);
     const [id, setId] = useState(0);
@@ -40,6 +41,7 @@ const CreateRoomScreen = () => {
                     localizacionEvento,
                     cantidadAsistentes: parseInt(cantidadAsistentes),
                     fechaEvento,
+                    nombreEmpEvento, // Nuevo campo agregado aquí
                 }),
             });
 
@@ -50,7 +52,6 @@ const CreateRoomScreen = () => {
             const data = await response.json();
             setIdNavigationEventos(data);
 
-            Alert.alert('Evento Creado', 'El evento se ha creado exitosamente');
             console.log('ID del evento creado:', data);
 
             setNombreSala('');
@@ -58,15 +59,15 @@ const CreateRoomScreen = () => {
             setEdadMaxEvento('');
             setLocalizacion('');
             setTematicaEvento('');
-            setDescripcionEvento('');
+            setDescripcionEnvento('');
             setLocalizacionEvento('');
             setCantidadAsistentes('');
             setFechaEvento('');
-
-            handleVerEventos();
+            setNombreEmpEvento(''); // Nuevo campo agregado aquí
+            Alert.alert("sala creada correctamente")
+            navigation.navigate("Main");
         } catch (error) {
             console.error('Error al crear el evento:', error);
-            Alert.alert('Error', 'Ocurrió un error al crear el evento. Por favor, inténtalo de nuevo.');
         }
     };
 
@@ -76,7 +77,6 @@ const CreateRoomScreen = () => {
             if (userData) {
                 const { id } = JSON.parse(userData);
                 setId(id);
-                alert("El ID del usuario es " + id);
                 console.log("El ID del usuario es " + id);
             }
         } catch (error) {
@@ -84,33 +84,8 @@ const CreateRoomScreen = () => {
         }
     };
 
-    useEffect(() => {
-        if (idNavigationEventos !== 0) {
-            handleJoinEvent();
-        }
-    }, [idNavigationEventos]);
-
-    const handleJoinEvent = async () => {
-        try {
-            loadUserData();
-            console.log("Me he unido al evento " + idNavigationEventos + " y soy el usuario con ID " + id);
-            const response = await fetch(`http://192.168.1.90:3000/eventos/${idNavigationEventos}/usuario/${id}`, {
-                method: 'POST',
-            });
-            if (response.ok) {
-                Alert.alert('Éxito', 'Te has unido al evento correctamente');
-            } else {
-                throw new Error('Error al unirse al evento');
-            }
-        } catch (error) {
-            console.error('Error al unirse al evento:', error);
-        }
-    };
-
-    const handleVerEventos = () => {
-        navigation.navigate('VerEventos', { idNavigationEventos });
-    };
-
+  
+    
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Crear Evento</Text>
@@ -148,11 +123,10 @@ const CreateRoomScreen = () => {
             />
             <TextInput
                 placeholder="Descripción del Evento"
-                value={descripcionEvento}
-                onChangeText={setDescripcionEvento} // Corregido el nombre de la función
+                value={descripcionEnvento}
+                onChangeText={setDescripcionEnvento}
                 style={styles.input}
             />
-
             <TextInput
                 placeholder="Localización del Evento"
                 value={localizacionEvento}
@@ -170,6 +144,12 @@ const CreateRoomScreen = () => {
                 placeholder="Fecha del Evento (YYYY-MM-DD)"
                 value={fechaEvento}
                 onChangeText={setFechaEvento}
+                style={styles.input}
+            />
+            <TextInput
+                placeholder="Nombre de la Empresa Organizadora"
+                value={nombreEmpEvento}
+                onChangeText={setNombreEmpEvento}
                 style={styles.input}
             />
             <Button title="Confirmar Ajustes" onPress={handleCreateEvent} />

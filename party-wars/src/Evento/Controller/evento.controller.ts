@@ -39,4 +39,8 @@ export class EventoController {
   async findAllUsuariosByEventoId(@Param('id') eventoId: string): Promise<any[]> {
     return this.eventoService.findAllUsuariosByEventoId(parseInt(eventoId, 10));
   }
+  @Get('usuarios/:usuarioId/eventos')
+  async findSalasAndInfoByUsuarioId(@Param('usuarioId') usuarioId: string): Promise<Evento[]> {
+    return this.eventoService.findAllInfoByUsuarioId(parseInt(usuarioId, 10));
+  }
 }

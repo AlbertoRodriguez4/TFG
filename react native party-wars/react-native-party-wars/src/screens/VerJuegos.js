@@ -22,7 +22,6 @@ const ViewGamesScreen = ({ route }) => {
       console.log(idSala);
       const response = await fetch(`http://192.168.1.90:3000/juegos`);
       const data = await response.json();
-      console.log(data);
       setGames(data);
       setLoading(false);
     } catch (error) {

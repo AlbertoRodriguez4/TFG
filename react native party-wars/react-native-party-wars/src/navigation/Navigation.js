@@ -14,6 +14,7 @@ import PlanBusiness from '../screens/PlanBusiness';
 import SalasUsuarioUnido from '../screens/SalasUsuarioUnido';
 import IniciarJuegos from '../screens/IniciarJuegos';
 import CrearEvento from '../screens/CrearEvento';
+import verDatosEventos from '../screens/verDatosEventos';
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
@@ -156,6 +157,16 @@ export default function Navigation() {
         component={CrearEvento}
         options={{
           tabBarLabel: 'Crear Evento',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="gamepad" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="verDatosEventos"
+        component={verDatosEventos}
+        options={{
+          tabBarLabel: 'Ver Eventos',
           tabBarIcon: ({ color, size }) => (
             <Icon name="gamepad" color={color} size={size} />
           ),
