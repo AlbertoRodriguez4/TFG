@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Agrega useFocusEffect
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [loginError, setLoginError] = useState(false); // Estado para controlar el error de inicio de sesión
+  const [loginError, setLoginError] = useState(false);
 
-  // Utiliza useFocusEffect para llamar a checkSession() cada vez que el componente se enfoque
   useFocusEffect(
     React.useCallback(() => {
       checkSession();
@@ -19,10 +18,8 @@ const LoginScreen = () => {
 
   const checkSession = async () => {
     try {
-      // Verifica si existe un usuario almacenado en AsyncStorage
       const user = await AsyncStorage.getItem('userData');
       if (user) {
-        // Si hay un usuario, actualiza el estado para mostrar su nombre
         setLoggedInUser(JSON.parse(user).nome);
       }
     } catch (error) {
@@ -35,37 +32,28 @@ const LoginScreen = () => {
       const response = await fetch(`http://192.168.1.90:3000/usuarios/login/${email}/${password}`);
       const userData = await response.json();
 
-      // Verificar si se recibió un ID de usuario válido del servidor
       if (userData.id) {
-        // Guardar los detalles del usuario en AsyncStorage si lo deseas
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
-
-        // Si el inicio de sesión es exitoso, mostramos un alert con el nombre del usuario
+        setLoggedInUser(userData.nome); // Actualiza el estado loggedInUser con el nombre del usuario
         Alert.alert('Inicio de Sesión Exitoso', `Hola, ${userData.nome}`);
-
-        // Luego navegamos a la pantalla 'Main'
         navigation.navigate('Main', { id: userData.id });
       } else {
-        // Si no se recibe un ID de usuario válido, mostrar un mensaje de error
-        setLoginError(true); // Establecer el estado de error de inicio de sesión como verdadero
+        setLoginError(true);
         throw new Error('Correo electrónico o contraseña incorrectos');
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      setLoginError(true); // Establecer el estado de error de inicio de sesión como verdadero
+      setLoginError(true);
     }
   };
 
   const handleRegister = () => {
-    // Redirige a la pantalla de registro
     navigation.navigate('Register');
   };
 
   const handleLogout = async () => {
     try {
-      // Borrar los datos del usuario del AsyncStorage
       await AsyncStorage.removeItem('userData');
-      // Actualizar el estado loggedInUser a null
       setLoggedInUser(null);
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -107,5 +95,3 @@ const LoginScreen = () => {
 };
 
 export default LoginScreen;
-
-

@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-let idSala = 0;
 
 const ViewGamesScreen = ({ route }) => {
   const navigation = useNavigation();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [salaId, setSalaId] = useState(null); // Variable para almacenar el ID de la sala
+  const [salaId, setSalaId] = useState(null);
+
   useEffect(() => {
     if (route.params && route.params.idNavigationJuegos) {
       const { idNavigationJuegos } = route.params;
-      console.log("el id de la sala es " + idNavigationJuegos);
-      idSala = idNavigationJuegos;
-      fetchGames();
+      console.log("El id de la sala es " + idNavigationJuegos);
+      setSalaId(idNavigationJuegos); // Asignar el ID de la sala al estado
+      fetchGames(idNavigationJuegos); // Llamar a fetchGames con el ID de la sala
     }
   }, [route.params]);
 
-  const fetchGames = async () => {
+  const fetchGames = async (idSala) => {
     try {
+      console.log(idSala);
       const response = await fetch(`http://192.168.1.90:3000/juegos`);
       const data = await response.json();
+      console.log(data);
       setGames(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching games:', error);
+      console.error('Error al obtener juegos:', error);
       setLoading(false);
     }
   };
@@ -32,18 +34,19 @@ const ViewGamesScreen = ({ route }) => {
   const handleCrearJuego = () => {
     navigation.navigate('CrearJuego', { idNavigationJuegos: salaId });
   };
+
   const handleCrearSala = () => {
     Alert.alert('Sala Creada', 'Sala creada correctamente', [
       {
         text: 'OK',
-        onPress: () => navigation.navigate('Main'), // Redirige a la pantalla principal
+        onPress: () => navigation.navigate('Main'),
       }
     ]);
   };
+
   const handleAddGame = async (juegoId) => {
     try {
-      console.log(idSala, juegoId);
-      const response = await fetch(`http://192.168.1.90:3000/salas/${idSala}/juegos/${juegoId}`, {
+      const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos/${juegoId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,11 +97,9 @@ const ViewGamesScreen = ({ route }) => {
         keyExtractor={(item) => item.id.toString()}
       />
       <Button title="Crear Sala" onPress={handleCrearSala} />
-
       <Text style={{ marginVertical: 10 }}>¿No ves ningún juego que te convenza? <Text style={{ color: 'blue' }} onPress={handleCrearJuego}>¡Crea el tuyo!</Text></Text>
     </View>
   );
 };
 
 export default ViewGamesScreen;
-

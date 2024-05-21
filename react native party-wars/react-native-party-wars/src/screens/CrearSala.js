@@ -52,8 +52,6 @@ const CreateRoomScreen = () => {
       const data = await response.json(); // Obtener el cuerpo de la respuesta
       setIdNavigationJuegos(data); // Asignar el ID al estado
 
-      Alert.alert('Sala Creada', 'La sala se ha creado exitosamente');
-      console.log('ID de la sala creada:', data);
 
       setNombre('');
       setDescripcion('');
@@ -67,7 +65,6 @@ const CreateRoomScreen = () => {
       handleVerJuegos();
     } catch (error) {
       console.error('Error al crear la sala:', error);
-      Alert.alert('Error', 'Ocurrió un error al crear la sala. Por favor, inténtalo de nuevo.');
     }
   };
 
@@ -77,7 +74,6 @@ const CreateRoomScreen = () => {
       if (userData) {
         const { id } = JSON.parse(userData);
         setId(id);
-        alert("El ID del usuario es " + id);
         console.log("El ID del usuario es " + id);
       }
     } catch (error) {
@@ -99,7 +95,6 @@ const CreateRoomScreen = () => {
         method: 'POST',
       });
       if (response.ok) {
-        Alert.alert('Éxito', 'Te has unido a la fiesta correctamente');
       } else {
         throw new Error('Error al unirse a la fiesta');
       }

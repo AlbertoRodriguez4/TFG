@@ -6,12 +6,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Main = () => {
   const navigation = useNavigation();
   const [salas, setSalas] = useState([]);
+  const [eventos, setEventos] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSalas, setFilteredSalas] = useState([]);
   const [tematicas] = useState(["Entretenimiento", "Conocer a gente", "Deportes", "Cultura", "Educación"]);
+  const [id, setId] = useState(0); // Establece el estado del ID
+  const [plan, setPlan] = useState(''); 
 
   useEffect(() => {
     fetchSalas();
+    fetchEventos();
+    loadUserData();
     const intervalId = setInterval(fetchSalas, 20000); // Realizar la llamada cada 60 segundos
 
     // Limpiar el intervalo al desmontar el componente
@@ -25,6 +30,32 @@ const Main = () => {
       setSalas(data);
     } catch (error) {
       console.error('Error al cargar las salas:', error);
+    }
+  };
+
+  const fetchEventos = async () => {
+    try {
+      const response = await fetch('http://192.168.1.90:3000/eventos');
+      const data = await response.json();
+      setEventos(data);
+    } catch (error) {
+      console.error('Error al cargar los eventos:', error);
+    }
+  };
+
+  const loadUserData = async () => {
+    try {
+      // Obtener los datos del usuario guardados en AsyncStorage
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        // Si hay datos del usuario, actualizar los estados locales
+        const { id, plan } = JSON.parse(userData);
+        setId(id); // Establece el estado del ID
+        setPlan(plan);
+        console.log(id, plan);
+      }
+    } catch (error) {
+      console.error('Error al cargar los datos del usuario:', error);
     }
   };
 
@@ -71,9 +102,30 @@ const Main = () => {
     </TouchableOpacity>
   );
 
+  const renderEventoCard = ({ item }) => (
+    <TouchableOpacity  style={styles.card}>
+      <Text style={styles.cardTitle}>{item.nombreSala}</Text>
+      <Text style={styles.cardDescription}>{item.descripcionEvento}</Text>
+      <Text style={styles.cardInfo}>Tematica: {item.tematicaEvento}</Text>
+      <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinEvento}</Text>
+      <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxEvento}</Text>
+      <Text style={styles.cardInfo}>Localización: {item.localizacionEvento}</Text>
+      <TouchableOpacity  style={styles.button}>
+        <Text style={styles.buttonText}>Ver Detalles</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const handleCrearSala = () => {
+    navigation.navigate('CrearSala');
+  };
+
+  const handleCrearEvento = () => {
+    navigation.navigate('CrearEvento');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Salas Disponibles</Text>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -86,12 +138,25 @@ const Main = () => {
       <View style={styles.tematicasContainer}>
         {tematicas.map(renderTematicaCircle)}
       </View>
+      <Text style={styles.title}>Eventos Disponibles</Text>
+      <FlatList
+        data={eventos}
+        renderItem={renderEventoCard}
+        keyExtractor={(item) => item.id.toString()}
+        style={styles.flatList}
+      />
+      <Text style={styles.title}>Salas Disponibles</Text>
       <FlatList
         data={filteredSalas.length > 0 ? filteredSalas : salas}
         renderItem={renderSalaCard}
         keyExtractor={(item) => item.id.toString()}
         style={styles.flatList}
       />
+      {plan === 'Business' ? (
+        <Button title="Crear Evento" onPress={handleCrearEvento} />
+      ) : (
+        <Button title="Crear Sala" onPress={handleCrearSala} />
+      )}
     </View>
   );
 };
@@ -106,6 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop: 10,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -158,7 +224,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#007bff',
-    padding: 10,
+    padding: 15,
     borderRadius: 5,
     marginTop: 10,
   },
@@ -166,13 +232,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   flatList: {
     flexGrow: 1,
   },
 });
 
+
 export default Main;
-
-
-

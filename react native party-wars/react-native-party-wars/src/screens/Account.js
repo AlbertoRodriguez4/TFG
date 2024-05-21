@@ -90,12 +90,7 @@ const EditProfileScreen = ({ route }) => {
         secureTextEntry
         style={styles.input}
       />
-      <TextInput
-        placeholder="Plan"
-        value={plan}
-        onChangeText={setPlan}
-        style={styles.input}
-      />
+     
       <TextInput
         placeholder="Descripción personal"
         value={descripcionPersonal}

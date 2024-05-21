@@ -20,6 +20,7 @@ export class EventoService {
 
 
   async create(evento: Evento): Promise<Evento> {
+    console.log(evento);
     return await this.eventoRepository.save(evento);
   }
 

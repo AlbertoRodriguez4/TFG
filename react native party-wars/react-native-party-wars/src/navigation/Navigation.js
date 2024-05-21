@@ -13,13 +13,17 @@ import PlanPremium from '../screens/PlanPremium';
 import PlanBusiness from '../screens/PlanBusiness';
 import SalasUsuarioUnido from '../screens/SalasUsuarioUnido';
 import IniciarJuegos from '../screens/IniciarJuegos';
+import CrearEvento from '../screens/CrearEvento';
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
   const [showTabs, setShowTabs] = useState(false);
 
   return (
-    <Tab.Navigator initialRouteName="Login">
+    <Tab.Navigator initialRouteName="Login"
+      screenOptions={{
+        headerShown: false
+      }}>
       <Tab.Screen
         name="Account"
         component={Account}
@@ -145,6 +149,16 @@ export default function Navigation() {
             <Icon name="gamepad" color={color} size={size} />
 
           )
+        }}
+      />
+      <Tab.Screen
+        name="CrearEvento"
+        component={CrearEvento}
+        options={{
+          tabBarLabel: 'Crear Evento',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="gamepad" color={color} size={size} />
+          ),
         }}
       />
     </Tab.Navigator>
