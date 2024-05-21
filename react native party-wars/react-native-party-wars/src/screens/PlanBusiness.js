@@ -23,6 +23,7 @@ const PlanBusiness = () => {
       if (userData) {
         const { id } = JSON.parse(userData);
         setId(id);
+        console.log("El id del usuario es: " + id);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
@@ -49,16 +50,13 @@ const PlanBusiness = () => {
 
   const makeCardPayment = async () => {
     try {
-      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan-business`, {
-        method: 'POST',
+      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          numeroTarjeta: cardNumber,
-          nombreTarjeta: cardName,
-          fechaExpiracion: cardExpDate,
-          cvv: cardCvv,
+          plan: 'Business',
         }),
       });
       const paymentData = await response.json();
@@ -71,14 +69,13 @@ const PlanBusiness = () => {
 
   const makePaypalPayment = async () => {
     try {
-      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan-business`, {
-        method: 'POST',
+      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          correoElectronico: paypalEmail,
-          contrasena: paypalPassword,
+          plan: 'Business',
         }),
       });
       const paymentData = await response.json();

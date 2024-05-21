@@ -50,15 +50,12 @@ const PlanPremium = () => {
   const makeCardPayment = async () => {
     try {
       const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          numeroTarjeta: cardNumber,
-          nombreTarjeta: cardName,
-          fechaExpiracion: cardExpDate,
-          cvv: cardCvv,
+          plan : "Premium",
         }),
       });
       const paymentData = await response.json();
@@ -72,13 +69,13 @@ const PlanPremium = () => {
   const makePaypalPayment = async () => {
     try {
       const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}/plan`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          correoElectronico: paypalEmail,
-          contrasena: paypalPassword,
+          plan : "Premium",
+
         }),
       });
       const paymentData = await response.json();
