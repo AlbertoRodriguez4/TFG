@@ -10,17 +10,19 @@ const VeDatosSalas = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [valor, setValor] = useState(0);
   const [espaciosDisponibles, setEspaciosDisponibles] = useState(0);
+  const [eventoId, setEventoId] = useState(null); // Nueva variable de estado para almacenar el eventoId
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         await loadUserData();
 
-        const { eventoId } = route.params; // Obtener el ID del evento del parámetro de ruta
-        console.log(eventoId);
+        const { eventoId: idFromParams } = route.params; // Obtener el ID del evento del parámetro de ruta
+        setEventoId(idFromParams); // Guardar el eventoId en la variable de estado
+        console.log(idFromParams);
 
         // Obtener datos del evento
-        const eventosResponse = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}`);
+        const eventosResponse = await fetch(`http://192.168.1.90:3000/eventos/${idFromParams}`);
         const eventosData = await eventosResponse.json();
         
         if (!eventosData || typeof eventosData !== 'object') {
@@ -28,7 +30,7 @@ const VeDatosSalas = ({ route, navigation }) => {
         }
 
         // Obtener usuarios del evento
-        const usuariosResponse = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}/usuarios`);
+        const usuariosResponse = await fetch(`http://192.168.1.90:3000/eventos/${idFromParams}/usuarios`);
         const usuariosData = await usuariosResponse.json();
         
         if (!Array.isArray(usuariosData)) {
@@ -80,7 +82,6 @@ const VeDatosSalas = ({ route, navigation }) => {
 
   const handleJoinEvent = async () => {
     try {
-      const { eventoId } = route.params;
       const response = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}/usuarios/${userData.id}`, {
         method: 'POST',
       });
@@ -94,6 +95,7 @@ const VeDatosSalas = ({ route, navigation }) => {
     } catch (error) {
       console.error('Error al unirse al evento:', error.message);
     }
+    navigation.navigate("CompraDeEntradas", { eventoId: eventoId });
   };
 
   return (
@@ -101,12 +103,12 @@ const VeDatosSalas = ({ route, navigation }) => {
       {/* Sección de eventos */}
       {evento && (
         <>
-          <Text style={styles.sectionTitle}>Eventos</Text>
+          <Text style={styles.sectionTitle}>Detalles del Evento</Text>
           <FlatList
             data={[evento]}
             renderItem={({ item }) => (
               <View style={styles.item}>
-                <Text>Nombre de la Sala: {item.nombreSala ? item.nombreSala : 'Nombre no disponible'}</Text>
+                <Text>Nombre de la Sala: {item.nombreSala || 'Nombre no disponible'}</Text>
                 <Text>Edad Mínima del Evento: {item.edadMinEvento}</Text>
                 <Text>Edad Máxima del Evento: {item.edadMaxEvento}</Text>
                 <Text>Localización: {item.localizacion}</Text>
@@ -116,11 +118,16 @@ const VeDatosSalas = ({ route, navigation }) => {
                 <Text>Cantidad de Asistentes: {item.cantidadAsistentes}</Text>
                 <Text>Fecha del Evento: {item.fechaEvento}</Text>
                 <Text>Nombre de la Empresa Organizadora: {item.nombreEmpEvento}</Text>
-                <Text style={styles.espaciosDisponibles}>Espacios disponibles: {espaciosDisponibles}</Text>
               </View>
             )}
             keyExtractor={(item, index) => index.toString()}
           />
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoTitle}>Links de referencia:</Text>
+            <Text style={styles.infoText}>{evento.linksDeReferencia || 'No disponible'}</Text>
+            <Text style={styles.infoTitle}>Espacios disponibles:</Text>
+            <Text style={styles.infoText}>{espaciosDisponibles}</Text>
+          </View>
         </>
       )}
 
@@ -165,12 +172,21 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
-  espaciosDisponibles: {
+  infoContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#e9e9e9',
+    borderRadius: 5,
+  },
+  infoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'green', // Puedes cambiar el color según tu preferencia
+    marginBottom: 5,
   },
-  
+  infoText: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
 });
 
 export default VeDatosSalas;

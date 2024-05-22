@@ -152,7 +152,7 @@ const PlanPremium = () => {
           <Text style={styles.paymentText}>Pagar con PayPal</Text>
         </TouchableOpacity>
       </View>
-      {paymentForm}
+      <View style={styles.paymentForm}>{paymentForm}</View>
       {selectedPaymentMethod && (
         <TouchableOpacity style={styles.paymentButton} onPress={handlePayment} disabled={loading}>
           <Text style={styles.paymentButtonText}>Pagar</Text>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 20,
     paddingHorizontal: 30,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 28,
@@ -203,9 +203,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
   },
+  paymentForm: {
+    marginBottom: 20,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#cccccc',
+    borderColor: '#ccc',
     borderRadius: 5,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -219,7 +222,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   paymentButtonText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },

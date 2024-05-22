@@ -1,15 +1,14 @@
-// Evento.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { Usuario } from "../../Usuario/Entity/usuario.entity";
 
 @Entity()
 export class Evento {
   @PrimaryGeneratedColumn()
-  id: number; 
+  id: number;
 
   @Column({ length: 255 })
   nombreSala: string;
-  
+
   @Column()
   edadMinEvento: number;
 
@@ -30,12 +29,18 @@ export class Evento {
 
   @Column()
   cantidadAsistentes: number;
-  
+
   @Column()
   fechaEvento: Date;
 
   @Column({ length: 255 })
   nombreEmpEvento: string;
+
+  @Column({ length: 255, nullable: true })
+  linksDeReferencia: string;  // Campo modificado para permitir valores nulos
+
+  @Column({ type: 'float', nullable: true }) // Agregamos el campo precioEntrada con posibilidad de valores nulos
+  precioEntrada: number | null;
 
   @ManyToMany(() => Usuario)
   @JoinTable({

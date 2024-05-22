@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Main = () => {
   const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
   const [salas, setSalas] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSalas, setFilteredSalas] = useState([]);
   const [tematicas] = useState(["Entretenimiento", "Conocer a gente", "Deportes", "Cultura", "Educación"]);
   const [id, setId] = useState(0); // Establece el estado del ID
-  const [plan, setPlan] = useState(''); 
+  const [plan, setPlan] = useState('');
 
   useEffect(() => {
     fetchSalas();
     fetchEventos();
     loadUserData();
-    const intervalId = setInterval(fetchSalas, 20000); // Realizar la llamada cada 60 segundos
+    const intervalId = setInterval(fetchSalas, 2000); // Realizar la llamada cada 60 segundos
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
@@ -42,7 +43,11 @@ const Main = () => {
       console.error('Error al cargar los eventos:', error);
     }
   };
-
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchEventos(); // Llama a la función para obtener los eventos
+    setRefreshing(false);
+  };
   const loadUserData = async () => {
     try {
       // Obtener los datos del usuario guardados en AsyncStorage
@@ -96,14 +101,14 @@ const Main = () => {
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinima}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxima}</Text>
       <Text style={styles.cardInfo}>Localización: {item.localizacionSala}</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas',  { salaId: item.id })} style={styles.button}>
+      <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.button}>
         <Text style={styles.buttonText}>Ver Detalles</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   const renderEventoCard = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })}  style={styles.card}>
+    <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.card}>
       <Text style={styles.cardTitle}>{item.nombreSala}</Text>
       <Text style={styles.cardDescription}>{item.descripcionEvento}</Text>
       <Text style={styles.cardInfo}>Tematica: {item.tematicaEvento}</Text>
@@ -126,6 +131,15 @@ const Main = () => {
 
   return (
     <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      ></ScrollView>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}

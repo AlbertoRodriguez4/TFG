@@ -15,6 +15,9 @@ const CreateRoomScreen = () => {
     const [cantidadAsistentes, setCantidadAsistentes] = useState('');
     const [fechaEvento, setFechaEvento] = useState('');
     const [nombreEmpEvento, setNombreEmpEvento] = useState('');
+    const [linksDeReferencia, setLinksDeReferencia] = useState('');
+    const [requiereCompraEntradas, setRequiereCompraEntradas] = useState(false);
+    const [precioEntrada, setPrecioEntrada] = useState('');
     const navigation = useNavigation();
     const [userData, setUserData] = useState(null);
     const [id, setId] = useState(0);
@@ -41,7 +44,10 @@ const CreateRoomScreen = () => {
                     localizacionEvento,
                     cantidadAsistentes: parseInt(cantidadAsistentes),
                     fechaEvento,
-                    nombreEmpEvento, // Nuevo campo agregado aquí
+                    nombreEmpEvento,
+                    linksDeReferencia,
+                    requiereCompraEntradas,
+                    precioEntrada: requiereCompraEntradas ? parseFloat(precioEntrada) : null,
                 }),
             });
 
@@ -63,8 +69,11 @@ const CreateRoomScreen = () => {
             setLocalizacionEvento('');
             setCantidadAsistentes('');
             setFechaEvento('');
-            setNombreEmpEvento(''); // Nuevo campo agregado aquí
-            Alert.alert("sala creada correctamente")
+            setNombreEmpEvento('');
+            setLinksDeReferencia('');
+            setRequiereCompraEntradas(false);
+            setPrecioEntrada('');
+            Alert.alert("evento creado correctamente")
             navigation.navigate("Main");
         } catch (error) {
             console.error('Error al crear el evento:', error);
@@ -84,8 +93,6 @@ const CreateRoomScreen = () => {
         }
     };
 
-  
-    
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Crear Evento</Text>
@@ -152,6 +159,25 @@ const CreateRoomScreen = () => {
                 onChangeText={setNombreEmpEvento}
                 style={styles.input}
             />
+            <TextInput
+                placeholder="Links de Referencia"
+                value={linksDeReferencia}
+                onChangeText={setLinksDeReferencia}
+                style={styles.input}
+            />
+            <View style={styles.checkboxContainer}>
+                <Text>¿Requiere comprar entradas?</Text>
+                <Button title={requiereCompraEntradas ? 'Sí' : 'No'} onPress={() => setRequiereCompraEntradas(!requiereCompraEntradas)} />
+            </View>
+            {requiereCompraEntradas && (
+                <TextInput
+                    placeholder="Precio de la Entrada"
+                    value={precioEntrada}
+                    onChangeText={setPrecioEntrada}
+                    keyboardType="numeric"
+                    style={styles.input}
+                />
+            )}
             <Button title="Confirmar Ajustes" onPress={handleCreateEvent} />
         </View>
     );
@@ -175,6 +201,11 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         width: '100%',
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
     },
 });
 

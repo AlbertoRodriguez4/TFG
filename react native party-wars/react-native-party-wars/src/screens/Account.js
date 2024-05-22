@@ -60,7 +60,7 @@ const EditProfileScreen = ({ route }) => {
       if (!response.ok) {
         throw new Error('Error al actualizar el usuario');
       }
-
+      Alert.alert('Perfil actualizado', 'Su perfil ha sido actualizado exitosamente');
       // Una vez actualizados los datos, puedes redirigir al usuario a una pantalla de confirmación o a otra pantalla
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
