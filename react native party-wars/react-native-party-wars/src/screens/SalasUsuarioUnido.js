@@ -37,6 +37,7 @@ const SalasUsuario = ({ route }) => {
         }
     };
 
+
     const fetchSalasUsuario = async () => {
         try {
             const response = await fetch(`http://192.168.1.90:3000/salas/usuarios/${id}/salas`);
@@ -70,7 +71,7 @@ const SalasUsuario = ({ route }) => {
             } else {
                 setSalasNoPrimero(prevState => [...prevState, salaId]);
             }
-            
+
             // Imprimir información sobre si el usuario es el primero o no en la sala
             if (usuarios[0] && usuarios[0].id === id) {
                 console.log(`Soy primero en la sala ${salaId}`);
@@ -97,7 +98,25 @@ const SalasUsuario = ({ route }) => {
         // Navegar a la pantalla IniciarJuegos y pasar el ID de la sala como parámetro
         navigation.navigate('IniciarJuegos', { salaId });
     };
-
+    const handleSalirDeSala = async (salaId) => {
+        try {
+            console.log(salaId, id);
+            const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // Actualizar las salas después de salir
+                fetchSalasUsuario();
+                // Alerta de salida exitosa
+                Alert.alert('Salida exitosa', 'Te has salido de la sala de forma correcta.');
+            } else {
+                Alert.alert('Error', 'No se pudo salir de la sala.');
+            }
+        } catch (error) {
+            console.error('Error al salir de la sala:', error);
+            Alert.alert('Error', 'No se pudo salir de la sala.');
+        }
+    };
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>Salas del Usuario</Text>
@@ -115,6 +134,8 @@ const SalasUsuario = ({ route }) => {
                     {(salasPrimero.includes(sala.id) && sala.fecha === currentDay) && (
                         <Button title="Iniciar Party Wars" onPress={() => handleIniciarPartyWars(sala.id)} />
                     )}
+                    <Button title="Salir de la Sala" onPress={() => handleSalirDeSala(sala.id)} />
+
                 </View>
             ))}
 

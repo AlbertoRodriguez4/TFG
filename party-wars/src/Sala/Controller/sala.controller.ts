@@ -82,6 +82,7 @@ export class SalaController {
   async findByNombre(@Param('nombre') nombre: string) {
     return await this.salaService.findByNombre(nombre);
   }
+  
 }
 
 

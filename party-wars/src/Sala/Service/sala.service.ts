@@ -127,4 +127,5 @@ export class SalaService {
   async findByNombre(nombre: string): Promise<Sala[]> {
     return await this.salaRepository.find({ where: { nombre: nombre } });
   }
+  
 }

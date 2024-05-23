@@ -3,39 +3,55 @@ import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 
-const EditProfileScreen = ({ route }) => {
+const EditProfileScreen = () => {
   const navigation = useNavigation();
 
   // Utiliza los estados locales para almacenar los datos del usuario
-  const [nome, setnome] = useState(''); 
-  const [email, setEmail] = useState(''); 
-  const [password, setPassword] = useState(''); 
-  const [plan, setPlan] = useState(''); 
-  const [descripcionPersonal, setdescripcionPersonal] = useState(''); 
-  const [id, setId] = useState(0); // Establece el estado del ID
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [plan, setPlan] = useState('');
+  const [descripcionPersonal, setDescripcionPersonal] = useState('');
+  const [id, setId] = useState(0);
 
   useEffect(() => {
     // Cargar los datos del usuario al cargar la pantalla
     loadUserData();
-    console.log(id)
   }, []);
 
   const loadUserData = async () => {
     try {
-      // Obtener los datos del usuario guardados en AsyncStorage
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
-        // Si hay datos del usuario, actualizar los estados locales
-        const { id, nome, email, password, plan, descripcionPersonal } = JSON.parse(userData);
-        setId(id); // Establece el estado del ID
-        setnome(nome);
-        setEmail(email);
-        setPassword(password);
-        setPlan(plan);
-        setdescripcionPersonal(descripcionPersonal);
+        const { id } = JSON.parse(userData);
+        console.log(id)
+        setId(id);
+        fetchUserData(id);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
+    }
+  };
+
+  const fetchUserData = async (userId) => {
+    try {
+      const response = await fetch(`http://192.168.1.90:3000/usuarios/${userId}`);
+      if (response.ok) {
+        const userData = await response.json();
+        console.log(userData);
+
+        // Actualizar los estados locales con los datos del usuario
+        setNome(userData.nome);
+        setEmail(userData.email);
+        setPassword(userData.password);
+        setPlan(userData.plan);
+        setDescripcionPersonal(userData.descripcionPersonal);
+      } else {
+        throw new Error('Error al obtener los datos del usuario');
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos del usuario:', error);
+      Alert.alert('Error', 'Hubo un problema al obtener los datos del usuario. Por favor, intenta de nuevo.');
     }
   };
 
@@ -74,7 +90,7 @@ const EditProfileScreen = ({ route }) => {
       <TextInput
         placeholder="Nombre"
         value={nome}
-        onChangeText={setnome}
+        onChangeText={setNome}
         style={styles.input}
       />
       <TextInput
@@ -90,11 +106,10 @@ const EditProfileScreen = ({ route }) => {
         secureTextEntry
         style={styles.input}
       />
-     
       <TextInput
         placeholder="Descripción personal"
         value={descripcionPersonal}
-        onChangeText={setdescripcionPersonal}
+        onChangeText={setDescripcionPersonal}
         style={styles.input}
       />
       <Button title="Actualizar Perfil" onPress={handleUpdateProfile} />
@@ -117,6 +132,3 @@ const styles = StyleSheet.create({
 });
 
 export default EditProfileScreen;
-
-
-
