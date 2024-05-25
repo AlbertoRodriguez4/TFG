@@ -75,7 +75,7 @@ const RegisterScreen = () => {
       } else {
         setIsCodeVerified('false');
         Alert.alert('Código incorrecto', 'El código de verificación no es correcto.');
-        registrationMode('sendCode');
+        setRegistrationMode('sendCode');
       }
     } catch (error) {
       console.error('Error al verificar el código:', error);

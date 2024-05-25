@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -54,15 +54,27 @@ const Main = () => {
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         // Si hay datos del usuario, actualizar los estados locales
-        const { id, plan } = JSON.parse(userData);
-        setId(id); // Establece el estado del ID
-        setPlan(plan);
-        console.log(id, plan);
+        const { id } = JSON.parse(userData);
+        const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`);
+        const data = await response.json();
+        
+        // Asegúrate de que el plan se esté estableciendo correctamente
+        console.log("Plan recibido del servidor:", data.plan);
+        
+        // Establecer el estado del plan
+        setPlan(data.plan);
+        
+        // Establecer el estado del ID
+        setId(id);
+        
+        // Imprimir el ID y el plan para verificar
+        console.log("ID y plan después de establecerlos:", id, plan);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
     }
   };
+  
 
   const handleNavigate = (salaId) => {
     navigation.navigate('VerDatosSalas', { salaId });
@@ -110,16 +122,21 @@ const Main = () => {
   const renderEventoCard = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.card}>
       <Text style={styles.cardTitle}>{item.nombreSala}</Text>
-      <Text style={styles.cardDescription}>{item.descripcionEvento}</Text>
-      <Text style={styles.cardInfo}>Tematica: {item.tematicaEvento}</Text>
+      <Text style={styles.cardDescription}>{item.descripcionEnvento}</Text>
+      <Text style={styles.cardInfo}>Temática: {item.tematicaEvento}</Text>
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinEvento}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxEvento}</Text>
-      <Text style={styles.cardInfo}>Localización: {item.localizacionEvento}</Text>
+      <Text style={styles.cardInfo}>Localización: {item.localizacion}</Text>
+      {item.imagen && ( // Verifica si hay una URL de imagen disponible
+        <Image source={{ uri: item.imagen }} style={styles.image} />
+      )}
       <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
         <Text style={styles.buttonText}>Ver Detalles</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
+  
+
 
   const handleCrearSala = () => {
     navigation.navigate('CrearSala');
@@ -250,6 +267,11 @@ const styles = StyleSheet.create({
   },
   flatList: {
     flexGrow: 1,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    marginVertical: 10,
   },
 });
 
