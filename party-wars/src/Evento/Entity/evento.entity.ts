@@ -42,6 +42,9 @@ export class Evento {
   @Column({ type: 'float', nullable: true }) // Agregamos el campo precioEntrada con posibilidad de valores nulos
   precioEntrada: number | null;
 
+  @Column({ length: 512, nullable: true })
+  imagen: string;
+
   @ManyToMany(() => Usuario)
   @JoinTable({
     name: "usuario_evento",

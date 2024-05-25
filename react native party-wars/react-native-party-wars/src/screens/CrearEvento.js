@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, TextInput, Button, Alert, Image } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import { storage } from '../../FirebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const CreateRoomScreen = () => {
     const [nombreSala, setNombreSala] = useState('');

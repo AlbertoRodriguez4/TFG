@@ -59,4 +59,20 @@ export class UsuarioController {
   ): Promise<Usuario | undefined> {
     return this.usuarioService.updatePlan(parseInt(id, 10), plan);
   }
+
+  @Post('send-random-code')
+  async sendRandomCode(
+    @Body('email') email: string,
+  ): Promise<{ code: string }> {
+    const code = await this.usuarioService.sendRandomCodeByEmail(email);
+    return { code };
+  }
+
+  @Post('verify-code')
+  verifyCode(
+    @Body('email') email: string,
+    @Body('code') code: string,
+  ): boolean {
+    return this.usuarioService.verifyCode(email, code);
+  }
 }

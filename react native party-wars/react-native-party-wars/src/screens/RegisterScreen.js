@@ -12,9 +12,13 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [plan, setPlan] = useState('Básico');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState(null); // Almacena la URL de descarga de la imagen
+  const [image, setImage] = useState(null);
   const [imageSelected, setImageSelected] = useState(false);
-  const [errorText, setErrorText] = useState(''); // Estado para manejar el texto de error
+  const [errorText, setErrorText] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [isCodeVerified, setIsCodeVerified] = useState('');
+  const [registrationMode, setRegistrationMode] = useState('sendCode'); // Modo de registro: enviar código o verificar código
 
   useEffect(() => {
     requestMediaLibraryPermission();
@@ -31,50 +35,103 @@ const RegisterScreen = () => {
     }
   };
 
-  const handleRegister = async () => {
+  const sendVerificationCode = async () => {
     try {
-      // Verificar campos vacíos excepto la imagen
-      if (!name || !email || !password || !description || !imageSelected) {
-        setErrorText('No se pueden dejar campos vacíos excepto la imagen');
-        return;
-      }
-
-      // Verificar correo electrónico
-      if (!email.includes('@gmail.com')) {
-        setErrorText('Correo inválido, por favor, compruébelo');
-        return;
-      }
-
-      // Restablecer el texto de error si no hay problemas
-      setErrorText('');
-
-      const userData = {
-        nome: name,
-        email: email,
-        password: password,
-        plan: plan,
-        descripcionPersonal: description,
-        image: image, // Aquí se envía la URL de la imagen
-        urlImagen: image
-      };
-      console.log(userData);
-      console.log(userData.image);
-      const response = await fetch('http://192.168.1.90:3000/usuarios', {
+      const response = await fetch('http://192.168.1.90:3000/usuarios/send-random-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({ email }),
       });
-
-      if (!response.ok) {
-        throw new Error('Error al registrar el usuario');
-      }
-
-      navigation.navigate('Main');
+      const data = await response.json();
+      console.log(data);
+      setGeneratedCode(data.code);
+      Alert.alert('Código enviado', 'Se ha enviado un código de verificación a tu correo electrónico.');
+      setRegistrationMode('verifyCode'); // Cambiar al modo de verificación de código después de enviar el código
     } catch (error) {
-      console.error('Error al registrar usuario:', error);
-      Alert.alert('Error', 'Ocurrió un error al registrar el usuario. Por favor, inténtalo de nuevo.');
+      console.error('Error al enviar el código:', error);
+      Alert.alert('Error', 'Ocurrió un error al enviar el código. Por favor, inténtalo de nuevo.');
+    }
+  };
+
+  const verifyCode = async () => {
+    try {
+      const response = await fetch('http://192.168.1.90:3000/usuarios/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code: verificationCode }),
+      });
+      const isValid = await response.json();
+      console.log(isValid);
+      if (isValid) {
+        setIsCodeVerified('true');
+        console.log(isCodeVerified);
+        Alert.alert('Código verificado', 'El código de verificación es correcto.');
+        handleRegister(); // Ejecutar registro si el código es correcto
+        navigation.navigate('Main');
+      } else {
+        setIsCodeVerified('false');
+        Alert.alert('Código incorrecto', 'El código de verificación no es correcto.');
+        registrationMode('sendCode');
+      }
+    } catch (error) {
+      console.error('Error al verificar el código:', error);
+      Alert.alert('Error', 'Ocurrió un error al verificar el código. Por favor, inténtalo de nuevo.');
+    }
+  };
+
+  const handleRegister = async () => {
+    console.log(isCodeVerified);
+    if (isCodeVerified == 'false') {
+      Alert.alert('Código no verificado', 'Debes verificar tu correo electrónico antes de registrarte.');
+      console.log("no verificado");
+      return;
+    } else {
+      console.log(name, email, password, plan, description, image);
+      try {
+        if (!name || !email || !password || !description) {
+          setErrorText('No se pueden dejar campos vacíos excepto la imagen');
+          return;
+        }
+
+        if (!email.includes('@')) {
+          setErrorText('Correo inválido, por favor, compruébelo');
+          return;
+        }
+
+        setErrorText('');
+
+        const userData = {
+          nome: name,
+          email: email,
+          password: password,
+          plan: plan,
+          descripcionPersonal: description,
+          image: image,
+          urlImagen: image,
+        };
+        console.log(userData);
+        console.log(userData.image);
+        const response = await fetch('http://192.168.1.90:3000/usuarios', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al registrar el usuario');
+        }
+
+        navigation.navigate('Main');
+      } catch (error) {
+        console.error('Error al registrar usuario:', error);
+        Alert.alert('Error', 'Ocurrió un error al registrar el usuario. Por favor, inténtalo de nuevo.');
+      }
     }
   };
 
@@ -105,8 +162,8 @@ const RegisterScreen = () => {
       const snapshot = await uploadBytes(storageRef, blob);
       console.log('Imagen subida con éxito');
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('URL de la imagen:', downloadURL); //variable downloadURL
-      setImage(downloadURL); // Actualiza el estado de la imagen con la URL de descarga
+      console.log('URL de la imagen:', downloadURL);
+      setImage(downloadURL);
     } catch (error) {
       console.error('Error al subir la imagen:', error);
     }
@@ -115,47 +172,61 @@ const RegisterScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Registro</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Nombre"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Correo electrónico"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-        {/* Mostrar mensaje de error */}
-        {errorText && <Text style={styles.errorText}>{errorText}</Text>}
-        <TextInput
-          placeholder="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Plan"
-          value={plan}
-          onChangeText={setPlan}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Descripción personal"
-          value={description}
-          onChangeText={setDescription}
-          style={styles.input}
-        />
-      </View>
-      <Button title="Seleccionar Imagen" onPress={pickImage} />
-      {!imageSelected && <Text style={styles.text}>Si no quieres seleccionar una imagen ahora, podrás elegir una imagen en la configuración de perfil del usuario</Text>}
-      {imageSelected && <Text style={styles.text}>Imagen seleccionada</Text>}
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+      {registrationMode === 'sendCode' && (
+        <>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Nombre"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Correo electrónico"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
+            {errorText && <Text style={styles.errorText}>{errorText}</Text>}
+            <TextInput
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Plan"
+              value={plan}
+              onChangeText={setPlan}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Descripción personal"
+              value={description}
+              onChangeText={setDescription}
+              style={styles.input}
+            />
+          </View>
+          <Button title="Seleccionar Imagen" onPress={pickImage} />
+          {!imageSelected && <Text style={styles.text}>Si no quieres seleccionar una imagen ahora, podrás elegir una imagen en la configuración de perfil del usuario</Text>}
+          {imageSelected && <Text style={styles.text}>Imagen seleccionada</Text>}
+          {image && <Image source={{ uri: image }} style={styles.image} />}
+          <Button title="Registrarse" onPress={sendVerificationCode} />
+        </>
+      )}
+      {registrationMode === 'verifyCode' && (
+        <>
+          <TextInput
+            placeholder="Código de Verificación"
+            value={verificationCode}
+            onChangeText={setVerificationCode}
+            style={styles.input}
+          />
+          <Button title="Verificar Código" onPress={verifyCode} />
+        </>
+      )}
       <View style={styles.buttonContainer}>
-        <Button title="Registrarse" onPress={handleRegister} />
         <TouchableOpacity onPress={goToLogin}>
           <Text style={styles.link}>¿Ya tienes una cuenta? <Text style={styles.blueText}>Pincha aquí</Text></Text>
         </TouchableOpacity>
@@ -212,3 +283,4 @@ const styles = StyleSheet.create({
 });
 
 export default RegisterScreen;
+

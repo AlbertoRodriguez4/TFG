@@ -118,4 +118,8 @@ export class EventoService {
       qrStream.on('error', reject);
     });
   }
+  
+  
 }
+  
+
