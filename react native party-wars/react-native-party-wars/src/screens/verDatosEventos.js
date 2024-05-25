@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Button } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Button, Image, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VeDatosSalas = ({ route, navigation }) => {
@@ -137,6 +137,7 @@ const VeDatosSalas = ({ route, navigation }) => {
         data={usuarios}
         renderItem={({ item }) => (
           <View style={styles.item}>
+              <Image source={{ uri: item.urlImagen }} style={styles.image} />
             <Text>Nombre: {item.nome}</Text>
             <Text>Email: {item.email}</Text>
             <Text>Plan: {item.plan}</Text>
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     padding: 10,
     marginBottom: 10,
-    borderRadius: 5,
+    borderRadius:  5,
   },
   sectionTitle: {
     fontSize: 18,
@@ -187,6 +188,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 10,
   },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
 });
 
 export default VeDatosSalas;
+

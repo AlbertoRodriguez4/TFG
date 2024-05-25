@@ -9,12 +9,11 @@ const ViewGamesScreen = ({ route }) => {
   const [salaId, setSalaId] = useState(null);
 
   useEffect(() => {
-    if (route.params && route.params.idNavigationJuegos) {
       const { idNavigationJuegos } = route.params;
-      console.log("El id de la sala es " + idNavigationJuegos);
+      console.log("El id de la sala en la pantalla de ver juegosd es " + idNavigationJuegos);
       setSalaId(idNavigationJuegos); // Asignar el ID de la sala al estado
       fetchGames(idNavigationJuegos); // Llamar a fetchGames con el ID de la sala
-    }
+    
   }, [route.params]);
 
   const fetchGames = async (idSala) => {
@@ -58,6 +57,7 @@ const ViewGamesScreen = ({ route }) => {
 
       setGames(prevGames => prevGames.filter(game => game.id !== juegoId));
       Alert.alert('Juego Agregado', 'El juego se ha agregado correctamente');
+      console.log()
     } catch (error) {
       console.error('Error al agregar el juego:', error);
       Alert.alert('Error', 'Ocurrió un error al agregar el juego. Por favor, inténtalo de nuevo.');

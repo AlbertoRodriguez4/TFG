@@ -23,6 +23,7 @@ const CreateRoomScreen = () => {
   }, []);
 
   const handleVerJuegos = () => {
+    console.log("el id que voy a pasar eso el siguiente: " + idNavigationJuegos);
     navigation.navigate('VerJuegos', { idNavigationJuegos }); // Pasar el ID como un objeto
   };
 
@@ -62,7 +63,6 @@ const CreateRoomScreen = () => {
       setNumeroParticipantes('');
       setFecha(''); // Limpiar el estado de la fecha
 
-      handleVerJuegos();
     } catch (error) {
       console.error('Error al crear la sala:', error);
     }
@@ -95,6 +95,7 @@ const CreateRoomScreen = () => {
         method: 'POST',
       });
       if (response.ok) {
+        handleVerJuegos();
       } else {
         throw new Error('Error al unirse a la fiesta');
       }

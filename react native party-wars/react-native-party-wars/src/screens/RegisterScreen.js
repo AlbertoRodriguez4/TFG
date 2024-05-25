@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker'; // Importa expo-image-picker
+import * as ImagePicker from 'expo-image-picker';
+import { storage } from '../../FirebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [plan, setPlan] = useState('Plan básico');
+  const [plan, setPlan] = useState('Básico');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState(null);
-  const [imageSelected, setImageSelected] = useState(false); // Estado para indicar si se ha seleccionado una imagen
+  const [image, setImage] = useState(null); // Almacena la URL de descarga de la imagen
+  const [imageSelected, setImageSelected] = useState(false);
+  const [errorText, setErrorText] = useState(''); // Estado para manejar el texto de error
 
   useEffect(() => {
-    requestMediaLibraryPermission(); // Solicita permiso al cargar el componente
+    requestMediaLibraryPermission();
   }, []);
 
   const requestMediaLibraryPermission = async () => {
@@ -30,14 +33,32 @@ const RegisterScreen = () => {
 
   const handleRegister = async () => {
     try {
+      // Verificar campos vacíos excepto la imagen
+      if (!name || !email || !password || !description || !imageSelected) {
+        setErrorText('No se pueden dejar campos vacíos excepto la imagen');
+        return;
+      }
+
+      // Verificar correo electrónico
+      if (!email.includes('@gmail.com')) {
+        setErrorText('Correo inválido, por favor, compruébelo');
+        return;
+      }
+
+      // Restablecer el texto de error si no hay problemas
+      setErrorText('');
+
       const userData = {
         nome: name,
         email: email,
         password: password,
         plan: plan,
         descripcionPersonal: description,
-        image: image,
+        image: image, // Aquí se envía la URL de la imagen
+        urlImagen: image
       };
+      console.log(userData);
+      console.log(userData.image);
       const response = await fetch('http://192.168.1.90:3000/usuarios', {
         method: 'POST',
         headers: {
@@ -45,7 +66,6 @@ const RegisterScreen = () => {
         },
         body: JSON.stringify(userData),
       });
-      console.log(userData);
 
       if (!response.ok) {
         throw new Error('Error al registrar el usuario');
@@ -72,7 +92,23 @@ const RegisterScreen = () => {
 
     if (!result.cancelled) {
       setImage(result.assets[0].uri);
-      setImageSelected(true); // Establece el estado como verdadero cuando se selecciona una imagen
+      setImageSelected(true);
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const storageRef = ref(storage, `profileImages/${new Date().toISOString()}`);
+      const snapshot = await uploadBytes(storageRef, blob);
+      console.log('Imagen subida con éxito');
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('URL de la imagen:', downloadURL); //variable downloadURL
+      setImage(downloadURL); // Actualiza el estado de la imagen con la URL de descarga
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
     }
   };
 
@@ -92,6 +128,8 @@ const RegisterScreen = () => {
           onChangeText={setEmail}
           style={styles.input}
         />
+        {/* Mostrar mensaje de error */}
+        {errorText && <Text style={styles.errorText}>{errorText}</Text>}
         <TextInput
           placeholder="Contraseña"
           value={password}
@@ -113,6 +151,7 @@ const RegisterScreen = () => {
         />
       </View>
       <Button title="Seleccionar Imagen" onPress={pickImage} />
+      {!imageSelected && <Text style={styles.text}>Si no quieres seleccionar una imagen ahora, podrás elegir una imagen en la configuración de perfil del usuario</Text>}
       {imageSelected && <Text style={styles.text}>Imagen seleccionada</Text>}
       {image && <Image source={{ uri: image }} style={styles.image} />}
       <View style={styles.buttonContainer}>
@@ -130,6 +169,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    textAlign: 'center',
     paddingHorizontal: 20,
   },
   heading: {
@@ -166,6 +206,9 @@ const styles = StyleSheet.create({
   blueText: {
     color: 'blue',
   },
+  errorText: {
+    color: 'red',
+  }
 });
 
 export default RegisterScreen;

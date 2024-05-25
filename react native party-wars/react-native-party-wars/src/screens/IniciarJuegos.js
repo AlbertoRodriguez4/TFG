@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Button, FlatList, StyleSheet, Alert } from "react-native";
-
+import { NavigationAction } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 const IniciarJuegos = ({ route }) => {
     const { salaId } = route.params;
     const [juegos, setJuegos] = useState([]);
     const [juegoIndex, setJuegoIndex] = useState(0);
     const [preguntas, setPreguntas] = useState([]);
     const [preguntaIndex, setPreguntaIndex] = useState(0);
+    const navigation = useNavigation(); // Inicializa el hook useNavigation
 
     useEffect(() => {
         fetchJuegos();
@@ -51,6 +53,7 @@ const IniciarJuegos = ({ route }) => {
                     onPress: () => { },
                 }
             ]);
+            navigation.navigate("SalasUsuarioUnido")
         }
     };
 
@@ -59,7 +62,6 @@ const IniciarJuegos = ({ route }) => {
             fetchPreguntasDeJuego(juegos[juegoIndex].id);
         } else {
             // Si no hay juegos disponibles, muestra un mensaje de error
-            Alert.alert('Error', 'No hay juegos disponibles');
         }
     }, [juegoIndex, juegos]);
 

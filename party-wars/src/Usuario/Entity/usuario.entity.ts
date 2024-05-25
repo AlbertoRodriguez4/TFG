@@ -1,9 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
 import { Sala } from "./../../Sala/Entity/sala.entity";
 import { Evento } from "../../Evento/Entity/evento.entity";
-import { Buffer } from 'buffer';
 
-// Definir un tipo de enumeración para los planes permitidos
 enum Plan {
   BASICO = 'Básico',
   PREMIUM = 'Premium',
@@ -24,7 +22,6 @@ export class Usuario {
   @Column({ length: 255 })
   password: string;
 
-  // Utilizar el tipo de enumeración para limitar los valores permitidos
   @Column({
     type: 'enum',
     enum: Plan,
@@ -35,9 +32,12 @@ export class Usuario {
   @Column({ length: 255 })
   descripcionPersonal: string;
 
-  @Column("bytea", { nullable: true })
-  imagen: Buffer;
+  @Column({ length: 512, nullable: true })
+  imagen: string; // Asegúrate de que la longitud sea suficiente
 
+  @Column({length : 512, nullable: true})
+  urlImagen: string;
+  
   @ManyToMany(() => Sala)
   salas: Sala[];
 

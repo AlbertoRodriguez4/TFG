@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
+import { storage } from '../../FirebaseConfig'; // Asegúrate de importar tu configuración de Firebase
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -13,18 +16,26 @@ const EditProfileScreen = () => {
   const [plan, setPlan] = useState('');
   const [descripcionPersonal, setDescripcionPersonal] = useState('');
   const [id, setId] = useState(0);
+  const [urlImagen, setUrlImagen] = useState(null); // Nuevo estado para la URL de la imagen
+  const [newImage, setNewImage] = useState(null); // Nuevo estado para la nueva imagen seleccionada
 
   useEffect(() => {
-    // Cargar los datos del usuario al cargar la pantalla
     loadUserData();
+    requestMediaLibraryPermission();
   }, []);
+
+  const requestMediaLibraryPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso necesario', 'Se requiere permiso para acceder a la biblioteca de fotos.', [{ text: 'OK', onPress: () => console.log('OK Pressed') }]);
+    }
+  };
 
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         const { id } = JSON.parse(userData);
-        console.log(id)
         setId(id);
         fetchUserData(id);
       }
@@ -38,14 +49,12 @@ const EditProfileScreen = () => {
       const response = await fetch(`http://192.168.1.90:3000/usuarios/${userId}`);
       if (response.ok) {
         const userData = await response.json();
-        console.log(userData);
-
-        // Actualizar los estados locales con los datos del usuario
         setNome(userData.nome);
         setEmail(userData.email);
         setPassword(userData.password);
         setPlan(userData.plan);
         setDescripcionPersonal(userData.descripcionPersonal);
+        setUrlImagen(userData.urlImagen); // Establecer la URL de la imagen
       } else {
         throw new Error('Error al obtener los datos del usuario');
       }
@@ -57,15 +66,21 @@ const EditProfileScreen = () => {
 
   const handleUpdateProfile = async () => {
     try {
+      let imageUrl = urlImagen;
+      if (newImage) {
+        imageUrl = await uploadImage(newImage);
+      }
+
       const updatedUserData = {
         nome: nome,
         email: email,
         password: password,
         plan: plan,
         descripcionPersonal: descripcionPersonal,
+        urlImagen: imageUrl, // Actualizar con la nueva URL de la imagen
       };
 
-      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`, { // Utiliza el ID para construir la URL
+      const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,17 +91,48 @@ const EditProfileScreen = () => {
       if (!response.ok) {
         throw new Error('Error al actualizar el usuario');
       }
+
       Alert.alert('Perfil actualizado', 'Su perfil ha sido actualizado exitosamente');
-      // Una vez actualizados los datos, puedes redirigir al usuario a una pantalla de confirmación o a otra pantalla
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
       Alert.alert('Error', 'Ocurrió un error al actualizar el usuario. Por favor, inténtalo de nuevo.');
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      setNewImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const storageRef = ref(storage, `profileImages/${new Date().toISOString()}`);
+      const snapshot = await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      return null;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text>Editar Perfil</Text>
+      <TouchableOpacity onPress={pickImage}>
+        {urlImagen && !newImage && <Image source={{ uri: urlImagen }} style={styles.image} />}
+        {newImage && <Image source={{ uri: newImage }} style={styles.image} />}
+      </TouchableOpacity>
       <TextInput
         placeholder="Nombre"
         value={nome}
@@ -128,6 +174,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 10,
     width: 250,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    marginVertical: 10,
   },
 });
 

@@ -21,7 +21,7 @@ export class UsuarioService {
   async create(usuarioData: Partial<Usuario>): Promise<Usuario> {
     const usuario = this.usuarioRepository.create(usuarioData);
     const createdUsuario = await this.usuarioRepository.save(usuario);
-    console.log('Datos del usuario creado:', createdUsuario); // Agregar console.log aquí
+    console.log('Datos del usuario creado:', createdUsuario); // Verifica que los datos se guarden correctamente
     return createdUsuario;
   }
 
@@ -49,7 +49,7 @@ export class UsuarioService {
       .createQueryBuilder('usuario')
       .where('usuario.email = :email', { email })
       .andWhere('usuario.password = :password', { password })
-      .andWhere('usuario.id IS NOT NULL') // Chequea si el id es un número
+      .andWhere('usuario.id IS NOT NULL')
       .getOne();
 
     if (!usuario) {
@@ -59,11 +59,8 @@ export class UsuarioService {
       return usuario;
     }
   }
+
   async updatePlan(id: number, plan: string): Promise<Usuario | undefined> {
-    //url para updatear : http://192.168.1.90:3000/usuarios/6/plan
-    /*{
-  "plan": "Premium"
-    }*/
     const usuario = await this.findOne(id);
     if (!usuario) {
       return undefined;

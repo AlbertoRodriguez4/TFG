@@ -27,7 +27,7 @@ export class UsuarioController {
 
   @Post()
   create(@Body() usuarioData: Partial<Usuario>): Promise<Usuario> {
-    console.log('Datos del usuario' + usuarioData.imagen);
+    console.log('imagen ' + usuarioData.imagen); // Verifica que la imagen no sea null aquí
     return this.usuarioService.create(usuarioData);
   }
 
@@ -43,6 +43,7 @@ export class UsuarioController {
   remove(@Param('id') id: string): Promise<void> {
     return this.usuarioService.remove(parseInt(id, 10));
   }
+
   @Get('login/:correo/:password')
   async login(
     @Param('correo') correo: string,
@@ -50,7 +51,7 @@ export class UsuarioController {
   ): Promise<Usuario | null> {
     return this.usuarioService.findByEmailAndPassword(correo, password);
   }
-  
+
   @Put(':id/plan')
   updatePlan(
     @Param('id') id: string,

@@ -123,7 +123,7 @@ const CompraEntradas = ({ route, navigation }) => {
                 if (response.ok) {
                   Alert.alert('Compra realizada', 'La compra se ha realizado con éxito. El correo electrónico ha sido enviado.');
                 } else {
-                  throw new Error('Error al enviar el correo electrónico');
+                  Alert.alert('Comprueba que tu correo elecotrónico es válido en el apartado de perfil');
                 }
               } catch (error) {
                 console.error('Error al enviar el correo electrónico:', error);
