@@ -8,6 +8,13 @@ const ViewGamesScreen = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [salaId, setSalaId] = useState(null);
 
+  // Array de imágenes de la carpeta assets
+  const images = [
+    require('../assets/mono-business.jpg'),
+    require('../assets/mono-premium.jpeg'),
+    // Agrega más imágenes según sea necesario
+  ];
+
   useEffect(() => {
     const { idNavigationJuegos } = route.params;
     console.log("El id de la sala en la pantalla de ver juegos es " + idNavigationJuegos);
@@ -20,7 +27,14 @@ const ViewGamesScreen = ({ route }) => {
       console.log(idSala);
       const response = await fetch(`http://192.168.1.90:3000/juegos`);
       const data = await response.json();
-      setGames(data);
+      
+      // Asignar una imagen aleatoria a cada juego
+      const gamesWithImages = data.map(game => ({
+        ...game,
+        imagen: images[Math.floor(Math.random() * images.length)]
+      }));
+
+      setGames(gamesWithImages);
       setLoading(false);
     } catch (error) {
       console.error('Error al obtener juegos:', error);
@@ -56,7 +70,6 @@ const ViewGamesScreen = ({ route }) => {
 
       setGames(prevGames => prevGames.filter(game => game.id !== juegoId));
       Alert.alert('Juego Agregado', 'El juego se ha agregado correctamente');
-      console.log()
     } catch (error) {
       console.error('Error al agregar el juego:', error);
       Alert.alert('Error', 'Ocurrió un error al agregar el juego. Por favor, inténtalo de nuevo.');
@@ -65,11 +78,13 @@ const ViewGamesScreen = ({ route }) => {
 
   const renderGameItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleAddGame(item.id)} style={styles.card}>
-      <Image source={{ uri: item.imagen }} style={styles.cardImage} />
+      <Image source={item.imagen} style={styles.cardImage} />
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.nombre}</Text>
+        <Text style={styles.text}>{item.descripcionJuego}</Text>
       </View>
     </TouchableOpacity>
+    
   );
 
   if (loading) {
@@ -97,9 +112,13 @@ const ViewGamesScreen = ({ route }) => {
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
       />
+      <Text style={styles.createOwnText}>
+        Agrega los juegos a la sala al pinchar encima de ellos 
+      </Text>
       <TouchableOpacity style={styles.createButton} onPress={handleCrearSala}>
         <Text style={styles.createButtonText}>Crear Sala</Text>
       </TouchableOpacity>
+      
       <Text style={styles.createOwnText}>
         ¿No ves ningún juego que te convenza? <Text style={styles.createOwnLink} onPress={handleCrearJuego}>¡Crea el tuyo!</Text>
       </Text>
@@ -179,6 +198,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  text: {
+
   },
 });
 
