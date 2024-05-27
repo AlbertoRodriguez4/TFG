@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Button, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const VeDatosSalas = ({ route }) => {
+const VeDatosSalas = ({ route, navigation }) => {
   const [datos, setDatos] = useState([]);
   const [userData, setUserData] = useState(null);
   const [isUserInRoom, setIsUserInRoom] = useState(false);
   const [idUsuariosSala, setIdUsuariosSala] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [valor, setValor] = useState(0);
+  const [espaciosDisponibles, setEspaciosDisponibles] = useState(0);
+  const [salaId, setSalaId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        loadUserData();
+        await loadUserData();
 
-        const { salaId } = route.params;
+        const { salaId: idFromParams } = route.params;
+        setSalaId(idFromParams);
 
-        const juegosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos`);
+        const juegosResponse = await fetch(`http://192.168.1.90:3000/salas/${idFromParams}/juegos`);
         const juegosData = await juegosResponse.json();
 
-        const usuariosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios`);
+        const usuariosResponse = await fetch(`http://192.168.1.90:3000/salas/${idFromParams}/usuarios`);
         const usuariosData = await usuariosResponse.json();
         const userIds = usuariosData.map(user => user.id);
-        setIdUsuariosSala(userIds);
+
+        setEspaciosDisponibles(8 - usuariosData.length); // Suponiendo que el máximo es 8
 
         const mergedData = [...juegosData, ...usuariosData];
         setDatos(mergedData);
@@ -62,14 +66,18 @@ const VeDatosSalas = ({ route }) => {
   };
 
   const handleJoinParty = async () => {
+    if (espaciosDisponibles <= 0) {
+      Alert.alert('Error', 'No hay espacios disponibles en esta sala');
+      return;
+    }
     try {
-      const { salaId } = route.params;
       const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${userData.id}`, {
         method: 'POST',
       });
       if (response.ok) {
         Alert.alert('Éxito', 'Te has unido a la fiesta correctamente');
         setIsUserInRoom(true);
+        setEspaciosDisponibles(prev => prev - 1);
       } else {
         throw new Error('Error al unirse a la fiesta');
       }
@@ -83,36 +91,65 @@ const VeDatosSalas = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Juegos</Text>
-      <FlatList
-        data={juegos}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>Nombre: {item.nombre}</Text>
-            <Text>Propiedad del Juego: {item.propiedadJuego}</Text>
-            <Text>Descripción del Juego: {item.descripcionJuego}</Text>
-            <Text>Categoría del Juego: {item.categoriaJuego}</Text>
-            <Text>Normas del Juego: {item.normasJuego}</Text>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={require('../assets/izquierda.png')} style={styles.icon} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Sala de Party Wars</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+          <Image source={require('../assets/hogar.png')} style={styles.icon} />
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.sectionTitle}>Usuarios</Text>
+      <Image source={require('../assets/mono-business.jpg')} style={styles.mainImage} />
+
+      <Text style={styles.subTitle}>Sala {8 - espaciosDisponibles}/8 Personas</Text>
+
       <FlatList
         data={usuarios}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            {item.urlImagen && <Image source={{ uri: item.urlImagen }} style={styles.image} />}
-            <Text>Nombre: {item.nome}</Text>
-            <Text>Descripción Personal: {item.descripcionPersonal}</Text>
+          <View style={styles.userCard}>
+            {item.urlImagen ? (
+              <Image source={{ uri: item.urlImagen }} style={styles.userImage} />
+            ) : (
+              <Image source={require('../assets/perfil.png')} style={styles.userImage} />
+            )}
+            <Text style={styles.userName}>{item.nome}</Text>
+            <Text style={styles.userDescription}>{item.descripcionPersonal}</Text>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.userList}
+      />
+
+      <Text style={styles.subTitle}>Juegos</Text>
+
+      <FlatList
+        data={juegos}
+        renderItem={({ item }) => (
+          <View style={styles.gameCard}>
+            <View style={styles.gameHeader}>
+              <Text style={styles.gameTitle}>{item.nombre}</Text>
+              <Text style={styles.gameCategory}>{item.categoriaJuego}</Text>
+            </View>
+            <Text style={styles.gameProperty}>{item.propiedadJuego}</Text>
+            <Text style={styles.gameDescription}>{item.descripcionJuego}</Text>
+            <Text style={styles.gameRules}>{item.normasJuego}</Text>
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}
       />
 
       {valor === 0 && (
-        <Button title="Unirse a la fiesta" onPress={handleJoinParty} />
+        <TouchableOpacity
+          style={styles.joinButton}
+          onPress={handleJoinParty}
+          disabled={espaciosDisponibles <= 0}
+        >
+          <Text style={styles.joinButtonText}>Unirse a la fiesta</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -121,26 +158,105 @@ const VeDatosSalas = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  item: {
     backgroundColor: '#f9f9f9',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
   },
-  sectionTitle: {
+  header: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    backgroundColor: '#000',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: '#fff',
+  },
+  headerTitle: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  image: {
+  mainImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+  },
+  subTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  userList: {
+    paddingVertical: 10,
+  },
+  userCard: {
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  userImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginBottom: 10,
   },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  userDescription: {
+    textAlign: 'center',
+  },
+  gameCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    marginHorizontal: 10,
+    elevation: 3,
+  },
+  gameHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gameTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  gameCategory: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#555',
+  },
+  gameProperty: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  gameDescription: {
+    fontSize: 14,
+    marginVertical: 5,
+  },
+  gameRules: {
+    fontSize: 14,
+    color: '#555',
+  },
+  joinButton: {
+    backgroundColor: '#FFA726',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
+    marginHorizontal: 20,
+  },
+  joinButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
-  
-  export default VeDatosSalas;
-  
+
+export default VeDatosSalas;

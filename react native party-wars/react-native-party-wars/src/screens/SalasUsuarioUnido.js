@@ -217,6 +217,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 5,
     },
+    startButton: {
+        backgroundColor: '#FFA726',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginVertical: 10,
+      },
+      startButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+      },
 });
 
 export default SalasUsuario;
