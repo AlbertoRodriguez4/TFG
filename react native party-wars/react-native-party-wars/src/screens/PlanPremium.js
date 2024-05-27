@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PlanPremium = () => {
@@ -55,11 +55,10 @@ const PlanPremium = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          plan : "Premium",
+          plan: "Premium",
         }),
       });
       const paymentData = await response.json();
-      // TODO: handle payment response
       Alert.alert('Pago realizado correctamente');
     } catch (error) {
       console.error('Error al realizar el pago con tarjeta de crédito:', error);
@@ -74,12 +73,10 @@ const PlanPremium = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          plan : "Premium",
-
+          plan: "Premium",
         }),
       });
       const paymentData = await response.json();
-      // TODO: handle payment response
       Alert.alert('Pago realizado correctamente');
     } catch (error) {
       console.error('Error al realizar el pago con PayPal:', error);
@@ -138,27 +135,40 @@ const PlanPremium = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Plan Premium</Text>
-      <Text style={styles.description}>
-        Obtén acceso a funciones exclusivas con nuestro Plan Premium. Acceso ilimitado a contenido premium, soporte 24/7 y mucho más.
-      </Text>
-      <View style={styles.paymentOptions}>
-        <TouchableOpacity style={styles.paymentOption} onPress={handleCardPayment} disabled={loading}>
-          <Image source={require('../assets/credit-card.png')} style={styles.paymentIcon} />
-          <Text style={styles.paymentText}>Pagar con tarjeta de crédito</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.paymentOption} onPress={handlePaypalPayment} disabled={loading}>
-          <Image source={require('../assets/paypal.png')} style={styles.paymentIcon} />
-          <Text style={styles.paymentText}>Pagar con PayPal</Text>
-        </TouchableOpacity>
+      <View style={styles.header}>
+        <View style={styles.bannerContainer2}>
+          <TouchableOpacity>
+            <Image source={require('../assets/izquierda.png')} style={styles.icon} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Plan Premium</Text>
+          <TouchableOpacity>
+            <Image source={require('../assets/hogar.png')} style={styles.icon} />
+          </TouchableOpacity>
+        </View>
+        <Image source={require('../assets/mono-premium.jpeg')} style={styles.bannerImage} />
       </View>
-      <View style={styles.paymentForm}>{paymentForm}</View>
-      {selectedPaymentMethod && (
-        <TouchableOpacity style={styles.paymentButton} onPress={handlePayment} disabled={loading}>
-          <Text style={styles.paymentButtonText}>Pagar</Text>
+
+      <View style={styles.contentContainer}>
+        <Text style={styles.subtitle}>¿Qué es el Plan Premium?</Text>
+        <Text style={styles.description}>
+          Obtén acceso a funciones exclusivas con nuestro Plan Premium. Acceso ilimitado a contenido premium, soporte 24/7 y mucho más.
+        </Text>
+        <View style={styles.paymentMethods}>
+          <TouchableOpacity style={styles.paymentButton} onPress={handleCardPayment}>
+            <Text style={styles.paymentButtonText}>Tarjeta de Crédito</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.paymentButton} onPress={handlePaypalPayment}>
+            <Text style={styles.paymentButtonText}>PayPal</Text>
+          </TouchableOpacity>
+        </View>
+        {paymentForm}
+
+        <TouchableOpacity style={styles.planButton} onPress={handlePayment}>
+          <Text style={styles.planButtonText}>Plan Premium 💼 60€</Text>
         </TouchableOpacity>
-      )}
-      {loading && <Text style={styles.loading}>Realizando pago...</Text>}
+
+        {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      </View>
     </ScrollView>
   );
 };
@@ -166,70 +176,97 @@ const PlanPremium = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 0,
   },
-  title: {
-    fontSize: 28,
+  header: {
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    backgroundColor: '#000000',
+    paddingHorizontal: 10,
+  },
+  bannerContainer2: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    backgroundColor: '#000000',
+    paddingHorizontal: 10,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: '#ffffff',
+  },
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  },
+  bannerImage: {
+    width: '80%',
+    height: 200,
+    resizeMode: 'cover',
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  contentContainer: {
+    padding: 15,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
   },
   description: {
     fontSize: 16,
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  paymentOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
-  paymentOption: {
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    padding: 20,
-    borderRadius: 10,
-    width: '45%',
-  },
-  paymentIcon: {
-    width: 80,
-    height: 80,
+    color: '#333333',
     marginBottom: 20,
   },
-  paymentText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  paymentForm: {
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
+  planButton: {
+    backgroundColor: '#ffcc00',
+    paddingVertical: 15,
     borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-  },
-  paymentButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
   },
-  paymentButtonText: {
-    color: '#fff',
+  planButtonText: {
+    color: '#000000',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  loading: {
+  paymentMethods: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  paymentButton: {
+    flex: 1,
+    backgroundColor: '#eeeeee',
+    paddingVertical: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  paymentButtonText: {
+    color: '#000000',
     fontSize: 16,
-    color: '#888888',
-    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#cccccc',
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+    fontSize: 16,
   },
 });
 

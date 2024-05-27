@@ -113,6 +113,8 @@ const Main = () => {
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinima}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxima}</Text>
       <Text style={styles.cardInfo}>Localización: {item.localizacionSala}</Text>
+      <Text style={styles.cardInfo}>Fecha: {item.fecha}</Text>
+
       <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.button}>
         <Text style={styles.buttonText}>Ver Detalles</Text>
       </TouchableOpacity>
