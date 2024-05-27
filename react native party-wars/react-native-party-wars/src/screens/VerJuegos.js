@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
+import { Card, Title, Paragraph } from 'react-native-paper';
+import {Picker} from '@react-native-picker/picker';
 const ViewGamesScreen = ({ route }) => {
   const navigation = useNavigation();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [salaId, setSalaId] = useState(null);
+  const [categoria, setCategoria] = useState(''); // Estado para la categoría seleccionada
 
   // Array de imágenes de la carpeta assets
   const images = [
@@ -16,16 +18,26 @@ const ViewGamesScreen = ({ route }) => {
   ];
 
   useEffect(() => {
-    const { idNavigationJuegos } = route.params;
+    const { idNavigationJuegos } = 102;
     console.log("El id de la sala en la pantalla de ver juegos es " + idNavigationJuegos);
     setSalaId(idNavigationJuegos); // Asignar el ID de la sala al estado
     fetchGames(idNavigationJuegos); // Llamar a fetchGames con el ID de la sala
   }, [route.params]);
 
-  const fetchGames = async (idSala) => {
+  useEffect(() => {
+    if (categoria) {
+      fetchGames(salaId, categoria); // Llamar a fetchGames cuando cambia la categoría
+    }
+  }, [categoria]);
+
+  const fetchGames = async (idSala, categoriaJuego = '') => {
     try {
       console.log(idSala);
-      const response = await fetch(`http://192.168.1.90:3000/juegos`);
+      const url = categoriaJuego 
+        ? `http://192.168.1.90:3000/juegos/${categoriaJuego}/categoria`
+        : `http://192.168.1.90:3000/juegos`;
+
+      const response = await fetch(url);
       const data = await response.json();
       
       // Asignar una imagen aleatoria a cada juego
@@ -84,7 +96,6 @@ const ViewGamesScreen = ({ route }) => {
         <Text style={styles.text}>{item.descripcionJuego}</Text>
       </View>
     </TouchableOpacity>
-    
   );
 
   if (loading) {
@@ -106,6 +117,19 @@ const ViewGamesScreen = ({ route }) => {
           <Image source={require('../assets/hogar.png')} style={styles.icon} />
         </TouchableOpacity>
       </View>
+
+      {/* Picker para seleccionar la categoría */}
+      <Picker
+        selectedValue={categoria}
+        style={styles.picker}
+        onValueChange={(itemValue) => setCategoria(itemValue)}
+      >
+        <Picker.Item label="Seleccione una categoría" value="" />
+        <Picker.Item label="Tablero" value="Tablero" />
+        <Picker.Item label="Bebida" value="Bebida" />
+        {/* Agrega más categorías según sea necesario */}
+      </Picker>
+
       <FlatList
         data={games}
         renderItem={renderGameItem}
@@ -199,8 +223,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginVertical: 10,
+  },
   text: {
-
+    // Ajustes de estilo para los textos dentro de los elementos de juego
   },
 });
 
