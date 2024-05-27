@@ -75,5 +75,8 @@ export class EventoController {
       await this.eventoService.sendEmailWithQrCode(compraDetails.email, evento, compraDetails.cantidadEntradas);
     }
   }
-  
+  @Get('tematica/:tematica')
+  async findByTematica(@Param('tematica') tematica: string) {
+    return await this.eventoService.findByTematica(tematica);
+  }  
 }

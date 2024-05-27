@@ -45,5 +45,8 @@ export class JuegosController {
   findPreguntasByJuegoId(@Param('id') juegoId: number): Promise<Pregunta[]> {
     return this.juegosService.findPreguntasByJuegoId(juegoId);
   }
-  
+  @Get(':categoria/categoria')
+  findByCategoria(@Param('categoria') categoria: string): Promise<Juego[]> {
+    return this.juegosService.findByCategoria(categoria);
+  }
 }

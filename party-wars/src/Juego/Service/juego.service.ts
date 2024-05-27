@@ -33,7 +33,8 @@ export class JuegosService {
     return this.preguntasRepository.save(pregunta);
   }
 
-  async addPreguntaToJuego(juegoId: number, preguntaId: number): Promise<void> { //la url, hay que pasar los datos por la misma url: http://192.168.1.90:3000/juegos/9/preguntas/9
+  async addPreguntaToJuego(juegoId: number, preguntaId: number): Promise<void> {
+    //la url, hay que pasar los datos por la misma url: http://192.168.1.90:3000/juegos/9/preguntas/9
     const juego = await this.juegosRepository.findOne({
       where: { id: juegoId },
       relations: ['preguntas'],
@@ -44,7 +45,7 @@ export class JuegosService {
     }
 
     const pregunta = await this.preguntasRepository.findOne({
-      where: { id: preguntaId }
+      where: { id: preguntaId },
     });
     if (!pregunta) {
       // Manejar el caso en que no se encuentre la pregunta
@@ -55,7 +56,8 @@ export class JuegosService {
     await this.juegosRepository.save(juego);
   }
 
-  async findPreguntasByJuegoId(juegoId: number): Promise<Pregunta[]> { //ver las preguntas de un juego: http://192.168.1.90:3000/juegos/9/preguntas
+  async findPreguntasByJuegoId(juegoId: number): Promise<Pregunta[]> {
+    //ver las preguntas de un juego: http://192.168.1.90:3000/juegos/9/preguntas
     const juego = await this.juegosRepository.findOne({
       where: { id: juegoId },
       relations: ['preguntas'],
@@ -66,6 +68,7 @@ export class JuegosService {
     }
     return juego.preguntas;
   }
-  
-  
+  async findByCategoria(categoria: string): Promise<Juego[]> {
+    return this.juegosRepository.find({ where: { categoriaJuego: categoria } });
+  }
 }

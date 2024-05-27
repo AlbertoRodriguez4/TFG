@@ -136,7 +136,7 @@ const SalasUsuario = ({ route }) => {
 
                     {(salasPrimero.includes(sala.id) && sala.fecha && sala.fecha.split('T')[0] === currentDay) && (
                         <TouchableOpacity style={styles.startButton} onPress={() => handleIniciarPartyWars(sala.id)}>
-                            <Text style={styles.startButtonText}>Iniciar Party Wars</Text>
+                            <Text style={styles.startButtonText}>Iniciar Party Wars 🎉</Text>
                         </TouchableOpacity>
                     )}
 

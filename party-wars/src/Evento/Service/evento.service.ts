@@ -119,7 +119,9 @@ export class EventoService {
     });
   }
   
-  
+  async findByTematica(tematica: string): Promise<Evento[]> {
+    return await this.eventoRepository.find({ where: { tematicaEvento: tematica } });
+  }
 }
   
 

@@ -3,14 +3,13 @@ import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VeDatosSalas = ({ route, navigation }) => {
-  const [datos, setDatos] = useState([]);
+  const [juegos, setJuegos] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [userData, setUserData] = useState(null);
   const [isUserInRoom, setIsUserInRoom] = useState(false);
-  const [idUsuariosSala, setIdUsuariosSala] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [valor, setValor] = useState(0);
   const [espaciosDisponibles, setEspaciosDisponibles] = useState(0);
   const [salaId, setSalaId] = useState(null);
+  const [datosSala, setDatosSala] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,30 +21,23 @@ const VeDatosSalas = ({ route, navigation }) => {
 
         const juegosResponse = await fetch(`http://192.168.1.90:3000/salas/${idFromParams}/juegos`);
         const juegosData = await juegosResponse.json();
+        setJuegos(juegosData);
 
         const usuariosResponse = await fetch(`http://192.168.1.90:3000/salas/${idFromParams}/usuarios`);
         const usuariosData = await usuariosResponse.json();
-        const userIds = usuariosData.map(user => user.id);
 
-        setEspaciosDisponibles(8 - usuariosData.length); // Suponiendo que el máximo es 8
+        const datosSalasResponse = await fetch(`http://192.168.1.90:3000/salas/${idFromParams}`);
+        const datosSalaData = await datosSalasResponse.json();
 
-        const mergedData = [...juegosData, ...usuariosData];
-        setDatos(mergedData);
+        setDatosSala(datosSalaData);
+        const numeroParticipantes = datosSalaData.numeroParticipantes;
+        setEspaciosDisponibles(numeroParticipantes - usuariosData.length);
 
         const userEmail = await AsyncStorage.getItem('userEmail');
         const isUserInRoom = usuariosData.some(user => user.email === userEmail);
         setIsUserInRoom(isUserInRoom);
 
-        const userData = await AsyncStorage.getItem('userData');
-        if (userData) {
-          const parsedUserData = JSON.parse(userData);
-          if (userIds.includes(parsedUserData.id)) {
-            setIsLoading(false);
-            setValor(1);
-          } else {
-            setValor(0);
-          }
-        }
+        setUsuarios(usuariosData);
       } catch (error) {
         console.error('Error al cargar los datos de la sala:', error);
       }
@@ -86,11 +78,8 @@ const VeDatosSalas = ({ route, navigation }) => {
     }
   };
 
-  const juegos = datos.filter(item => item.nombre);
-  const usuarios = datos.filter(item => item.nome);
-
-  return (
-    <View style={styles.container}>
+  const renderHeader = () => (
+    <View>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={require('../assets/izquierda.png')} style={styles.icon} />
@@ -103,10 +92,15 @@ const VeDatosSalas = ({ route, navigation }) => {
 
       <Image source={require('../assets/mono-business.jpg')} style={styles.mainImage} />
 
-      <Text style={styles.subTitle}>Sala {8 - espaciosDisponibles}/8 Personas</Text>
+      {datosSala && (
+        <Text style={styles.subTitle}>Sala {datosSala.numeroParticipantes - espaciosDisponibles}/{datosSala.numeroParticipantes} Personas</Text>
+      )}
 
+      <Text style={styles.subTitle}>Usuarios</Text>
       <FlatList
         data={usuarios}
+        horizontal
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.userCard}>
             {item.urlImagen ? (
@@ -118,46 +112,51 @@ const VeDatosSalas = ({ route, navigation }) => {
             <Text style={styles.userDescription}>{item.descripcionPersonal}</Text>
           </View>
         )}
-        keyExtractor={(item, index) => index.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.userList}
       />
-
       <Text style={styles.subTitle}>Juegos</Text>
+    </View>
+  );
 
-      <FlatList
-        data={juegos}
-        renderItem={({ item }) => (
-          <View style={styles.gameCard}>
-            <View style={styles.gameHeader}>
-              <Text style={styles.gameTitle}>{item.nombre}</Text>
-              <Text style={styles.gameCategory}>{item.categoriaJuego}</Text>
-            </View>
-            <Text style={styles.gameProperty}>{item.propiedadJuego}</Text>
-            <Text style={styles.gameDescription}>{item.descripcionJuego}</Text>
-            <Text style={styles.gameRules}>{item.normasJuego}</Text>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-
-      {valor === 0 && (
+  const renderFooter = () => (
+    <View>
+      {espaciosDisponibles > 0 && !isUserInRoom && (
         <TouchableOpacity
           style={styles.joinButton}
           onPress={handleJoinParty}
-          disabled={espaciosDisponibles <= 0}
         >
           <Text style={styles.joinButtonText}>Unirse a la fiesta</Text>
         </TouchableOpacity>
       )}
     </View>
   );
+
+  return (
+    <FlatList
+      data={juegos}
+      keyExtractor={(item, index) => index.toString()}
+      ListHeaderComponent={renderHeader}
+      ListFooterComponent={renderFooter}
+      renderItem={({ item }) => (
+        <View style={styles.gameCard}>
+          <View style={styles.gameHeader}>
+            <Text style={styles.gameTitle}>{item.nombre}</Text>
+            <Text style={styles.gameCategory}>{item.categoriaJuego}</Text>
+          </View>
+          <Text style={styles.gameProperty}>{item.propiedadJuego}</Text>
+          <Text style={styles.gameDescription}>{item.descripcionJuego}</Text>
+          <Text style={styles.gameRules}>{item.normasJuego}</Text>
+        </View>
+      )}
+      contentContainerStyle={styles.contentContainer}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#f9f9f9',
   },
   header: {
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
     marginHorizontal: 10,
-    elevation: 3,
+    elevation: 0,
   },
   gameHeader: {
     flexDirection: 'row',
@@ -241,8 +240,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   gameRules: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 12,
+    color: '#888',
   },
   joinButton: {
     backgroundColor: '#FFA726',
@@ -256,6 +255,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  contentContainer: {
+    paddingBottom: 100,
   },
 });
 
