@@ -2,27 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
-import { storage } from '../../FirebaseConfig'; // Asegúrate de importar tu configuración de Firebase
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from '../../FirebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
 
-  // Utiliza los estados locales para almacenar los datos del usuario
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [plan, setPlan] = useState('');
   const [descripcionPersonal, setDescripcionPersonal] = useState('');
   const [id, setId] = useState(0);
-  const [urlImagen, setUrlImagen] = useState(null); // Nuevo estado para la URL de la imagen
-  const [newImage, setNewImage] = useState(null); // Nuevo estado para la nueva imagen seleccionada
+  const [urlImagen, setUrlImagen] = useState(null);
+  const [newImage, setNewImage] = useState(null);
 
   useEffect(() => {
-    loadUserData();
-    requestMediaLibraryPermission();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadUserData();
+      requestMediaLibraryPermission();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const requestMediaLibraryPermission = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,7 +56,7 @@ const EditProfileScreen = () => {
         setPassword(userData.password);
         setPlan(userData.plan);
         setDescripcionPersonal(userData.descripcionPersonal);
-        setUrlImagen(userData.urlImagen); // Establecer la URL de la imagen
+        setUrlImagen(userData.urlImagen);
       } else {
         throw new Error('Error al obtener los datos del usuario');
       }
@@ -77,7 +79,7 @@ const EditProfileScreen = () => {
         password: password,
         plan: plan,
         descripcionPersonal: descripcionPersonal,
-        urlImagen: imageUrl, // Actualizar con la nueva URL de la imagen
+        urlImagen: imageUrl,
       };
 
       const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`, {
@@ -93,6 +95,7 @@ const EditProfileScreen = () => {
       }
 
       Alert.alert('Perfil actualizado', 'Su perfil ha sido actualizado exitosamente');
+      navigation.navigate('Main');
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
       Alert.alert('Error', 'Ocurrió un error al actualizar el usuario. Por favor, inténtalo de nuevo.');
@@ -130,34 +133,18 @@ const EditProfileScreen = () => {
     <View style={styles.container}>
       <Text>Editar Perfil</Text>
       <TouchableOpacity onPress={pickImage}>
-        {urlImagen && !newImage && <Image source={{ uri: urlImagen }} style={styles.image} />}
-        {newImage && <Image source={{ uri: newImage }} style={styles.image} />}
+        {urlImagen ? (
+          <Image source={{ uri: newImage ? newImage : urlImagen }} style={styles.image} />
+        ) : (
+          <View style={styles.profileIcon}>
+            <Text style={styles.iconText}>+</Text>
+          </View>
+        )}
       </TouchableOpacity>
-      <TextInput
-        placeholder="Nombre"
-        value={nome}
-        onChangeText={setNome}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Descripción personal"
-        value={descripcionPersonal}
-        onChangeText={setDescripcionPersonal}
-        style={styles.input}
-      />
+      <TextInput placeholder="Nombre" value={nome} onChangeText={setNome} style={styles.input} />
+      <TextInput placeholder="Correo electrónico" value={email} onChangeText={setEmail} style={styles.input} />
+      <TextInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+      <TextInput placeholder="Descripción personal" value={descripcionPersonal} onChangeText={setDescripcionPersonal} style={styles.input} />
       <Button title="Actualizar Perfil" onPress={handleUpdateProfile} />
     </View>
   );
@@ -179,6 +166,18 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     marginVertical: 10,
+  },
+  profileIcon: {
+    width: 200,
+    height: 200,
+    backgroundColor: 'lightgray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  iconText: {
+    fontSize: 50,
+    color: 'gray',
   },
 });
 
