@@ -9,20 +9,24 @@ const Main = () => {
   const [salas, setSalas] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredSalas, setFilteredSalas] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [selectedTematica, setSelectedTematica] = useState('');
   const [tematicas] = useState(["Entretenimiento", "Conocer a gente", "Deportes", "Cultura", "Educación"]);
-  const [id, setId] = useState(0); // Establece el estado del ID
+  const [id, setId] = useState(0);
   const [plan, setPlan] = useState('');
 
   useEffect(() => {
     fetchSalas();
     fetchEventos();
     loadUserData();
-    const intervalId = setInterval(fetchSalas, 2000); // Realizar la llamada cada 60 segundos
+    const intervalId = setInterval(fetchSalas, 2000);
 
-    // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    filterItems();
+  }, [salas, eventos, searchQuery, selectedTematica]);
 
   const fetchSalas = async () => {
     try {
@@ -43,73 +47,83 @@ const Main = () => {
       console.error('Error al cargar los eventos:', error);
     }
   };
+
   const onRefresh = () => {
     setRefreshing(true);
-    fetchEventos(); // Llama a la función para obtener los eventos
+    fetchSalas();
+    fetchEventos();
     setRefreshing(false);
   };
+
   const loadUserData = async () => {
     try {
-      // Obtener los datos del usuario guardados en AsyncStorage
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
-        // Si hay datos del usuario, actualizar los estados locales
         const { id } = JSON.parse(userData);
         const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`);
         const data = await response.json();
-        
-        // Asegúrate de que el plan se esté estableciendo correctamente
+
         console.log("Plan recibido del servidor:", data.plan);
-        
-        // Establecer el estado del plan
         setPlan(data.plan);
-        
-        // Establecer el estado del ID
         setId(id);
-        
-        // Imprimir el ID y el plan para verificar
         console.log("ID y plan después de establecerlos:", id, plan);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
     }
   };
-  
 
-  const handleNavigate = (salaId) => {
-    navigation.navigate('VerDatosSalas', { salaId });
+  const filterItems = () => {
+    let filtered = [...salas, ...eventos];
+
+    if (searchQuery) {
+      filtered = filtered.filter(item =>
+        item.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.nombreSala?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedTematica) {
+      filtered = filtered.filter(item =>
+        item.tematicaSala?.toLowerCase() === selectedTematica.toLowerCase() ||
+        item.tematicaEvento?.toLowerCase() === selectedTematica.toLowerCase()
+      );
+    }
+
+    // Ordenar los elementos, los eventos primero
+    filtered.sort((a, b) => (a.tematicaEvento ? -1 : 1));
+
+    setFilteredItems(filtered);
   };
 
   const handleSearch = () => {
-    const filtered = salas.filter(sala => sala.nombre.toLowerCase().includes(searchQuery.toLowerCase()));
-    setFilteredSalas(filtered);
+    filterItems();
   };
 
   const handleFilterByTematica = (tematica) => {
-    const filtered = salas.filter(sala => sala.tematicaSala.toLowerCase() === tematica.toLowerCase());
-    setFilteredSalas(filtered);
+    if (selectedTematica === tematica) {
+      setSelectedTematica('');
+    } else {
+      setSelectedTematica(tematica);
+    }
+    filterItems();
   };
 
   const renderTematicaCircle = (tematica) => (
     <TouchableOpacity
       key={tematica}
       onPress={() => handleFilterByTematica(tematica)}
-      style={[styles.tematicaCircle, { backgroundColor: getRandomColor() }]}
+      style={[styles.tematicaCircle, { backgroundColor: selectedTematica === tematica ? 'gray' : 'black' }]}
     >
       <Text style={styles.tematicaText}>{tematica}</Text>
     </TouchableOpacity>
   );
 
-  const getRandomColor = () => {
-    const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33E6', '#33E6FF', '#E6FF33'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
-
   const renderSalaCard = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.card}>
       <Text style={styles.cardTitle}>{item.nombre}</Text>
       <Text style={styles.cardDescription}>{item.descripcion}</Text>
-      <Text style={styles.cardInfo}>Tematica: {item.tematicaSala}</Text>
+      <Text style={styles.cardInfo}>Temática: {item.tematicaSala}</Text>
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinima}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxima}</Text>
       <Text style={styles.cardInfo}>Localización: {item.localizacionSala}</Text>
@@ -129,7 +143,7 @@ const Main = () => {
       <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinEvento}</Text>
       <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxEvento}</Text>
       <Text style={styles.cardInfo}>Localización: {item.localizacion}</Text>
-      {item.imagen && ( // Verifica si hay una URL de imagen disponible
+      {item.imagen && (
         <Image source={{ uri: item.imagen }} style={styles.image} />
       )}
       <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
@@ -137,8 +151,6 @@ const Main = () => {
       </TouchableOpacity>
     </TouchableOpacity>
   );
-  
-
 
   const handleCrearSala = () => {
     navigation.navigate('CrearSala');
@@ -158,38 +170,34 @@ const Main = () => {
             onRefresh={onRefresh}
           />
         }
-      ></ScrollView>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          placeholder="Buscar por nombre de sala"
+      >
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            placeholder="Buscar por nombre de sala o evento"
+          />
+          <Button title="Buscar" onPress={handleSearch} />
+        </View>
+        <View style={styles.tematicasContainer}>
+          {tematicas.map(renderTematicaCircle)}
+        </View>
+        <Text style={styles.title}>Eventos y Salas Disponibles</Text>
+        <FlatList
+          data={filteredItems}
+          renderItem={({ item }) =>
+            item.tematicaSala ? renderSalaCard({ item }) : renderEventoCard({ item })
+          }
+          keyExtractor={(item) => (item.tematicaSala ? `sala-${item.id}` : `evento-${item.id}`)}
+          style={styles.flatList}
         />
-        <Button title="Buscar" onPress={handleSearch} />
-      </View>
-      <View style={styles.tematicasContainer}>
-        {tematicas.map(renderTematicaCircle)}
-      </View>
-      <Text style={styles.title}>Eventos Disponibles</Text>
-      <FlatList
-        data={eventos}
-        renderItem={renderEventoCard}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.flatList}
-      />
-      <Text style={styles.title}>Salas Disponibles</Text>
-      <FlatList
-        data={filteredSalas.length > 0 ? filteredSalas : salas}
-        renderItem={renderSalaCard}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.flatList}
-      />
-      {plan === 'Business' ? (
-        <Button title="Crear Evento" onPress={handleCrearEvento} />
-      ) : (
-        <Button title="Crear Sala" onPress={handleCrearSala} />
-      )}
+        {plan === 'Business' ? (
+          <Button title="Crear Evento" onPress={handleCrearEvento} />
+        ) : (
+          <Button title="Crear Sala" onPress={handleCrearSala} />
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -221,27 +229,36 @@ const styles = StyleSheet.create({
   },
   tematicasContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     marginBottom: 20,
   },
   tematicaCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
+    margin: 5,
   },
   tematicaText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
   },
   card: {
     backgroundColor: '#f9f9f9',
     padding: 20,
-    marginBottom: 20,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   cardTitle: {
     fontSize: 18,
@@ -276,6 +293,5 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-
 
 export default Main;
