@@ -105,6 +105,13 @@ const CreateGameScreen = () => {
           onChangeText={setNormasJuego}
           style={styles.input}
         />
+        <Text style={styles.label}>Categoría</Text>
+        <TextInput
+          placeholder="Categoría del Juego"
+          value={categoriaJuego}
+          onChangeText={setCategoriaJuego}
+          style={styles.input}
+        />
       </View>
       <TouchableOpacity style={styles.createButton} onPress={handleCreateGame}>
         <Text style={styles.createButtonText}>Crear Juego 🏆</Text>
