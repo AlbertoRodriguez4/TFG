@@ -10,6 +10,7 @@ const VeDatosSalas = ({ route, navigation }) => {
   const [espaciosDisponibles, setEspaciosDisponibles] = useState(0);
   const [salaId, setSalaId] = useState(null);
   const [datosSala, setDatosSala] = useState(null);
+  const [usuarioId, setUsuarioId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,8 +34,9 @@ const VeDatosSalas = ({ route, navigation }) => {
         const numeroParticipantes = datosSalaData.numeroParticipantes;
         setEspaciosDisponibles(numeroParticipantes - usuariosData.length);
 
-        const userEmail = await AsyncStorage.getItem('userEmail');
-        const isUserInRoom = usuariosData.some(user => user.email === userEmail);
+        const userEmail = await AsyncStorage.getItem('id');
+        console.log(usuarioId);
+        const isUserInRoom = usuariosData.some(user => user.id === usuarioId);
         setIsUserInRoom(isUserInRoom);
 
         setUsuarios(usuariosData);
@@ -51,6 +53,8 @@ const VeDatosSalas = ({ route, navigation }) => {
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         setUserData(JSON.parse(userData));
+        const { id } = JSON.parse(userData);
+        setUsuarioId(id);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
