@@ -139,7 +139,7 @@ const ViewGamesScreen = ({ route }) => {
           <Image source={require('../assets/izquierda.png')} style={styles.icon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Partida Privada</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Main')}>
           <Image source={require('../assets/hogar.png')} style={styles.icon} />
         </TouchableOpacity>
       </View>
