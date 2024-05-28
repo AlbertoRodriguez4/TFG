@@ -160,7 +160,7 @@ export default function Navigation() {
         >
           {/* Cambiamos el ícono por una imagen */}
           <Image
-            source={require('../assets/mono-business.jpg')} // Reemplaza con la ruta a tu imagen
+            source={require('../assets/logopw.png')} // Reemplaza con la ruta a tu imagen
             style={styles.fabImage}
           />
         </TouchableOpacity>
