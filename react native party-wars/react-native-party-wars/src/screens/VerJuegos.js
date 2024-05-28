@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Card, Title, Paragraph } from 'react-native-paper';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const ViewGamesScreen = ({ route }) => {
   const navigation = useNavigation();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [salaId, setSalaId] = useState(null);
-  const [categoria, setCategoria] = useState(''); // Estado para la categoría seleccionada
+  const [categoria, setCategoria] = useState('');
+  const [usuarioId, setUsuarioId] = useState(null);
 
-  // Array de imágenes de la carpeta assets
   const images = [
     require('../assets/mono-business.jpg'),
     require('../assets/mono-premium.jpeg'),
@@ -18,29 +19,39 @@ const ViewGamesScreen = ({ route }) => {
   ];
 
   useEffect(() => {
-    const { idNavigationJuegos } = 102;
-    console.log("El id de la sala en la pantalla de ver juegos es " + idNavigationJuegos);
-    setSalaId(idNavigationJuegos); // Asignar el ID de la sala al estado
-    fetchGames(idNavigationJuegos); // Llamar a fetchGames con el ID de la sala
+    const { idNavigationJuegos } = route.params;
+    setSalaId(idNavigationJuegos);
+    fetchGames(idNavigationJuegos);
+    loadUserData();
   }, [route.params]);
 
   useEffect(() => {
     if (categoria) {
-      fetchGames(salaId, categoria); // Llamar a fetchGames cuando cambia la categoría
+      fetchGames(salaId, categoria);
     }
   }, [categoria]);
 
+  const loadUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        const { id } = JSON.parse(userData);
+        setUsuarioId(id);
+      }
+    } catch (error) {
+      console.error('Error al cargar los datos del usuario:', error);
+    }
+  };
+
   const fetchGames = async (idSala, categoriaJuego = '') => {
     try {
-      console.log(idSala);
-      const url = categoriaJuego 
+      const url = categoriaJuego
         ? `http://192.168.1.90:3000/juegos/${categoriaJuego}/categoria`
         : `http://192.168.1.90:3000/juegos`;
 
       const response = await fetch(url);
       const data = await response.json();
-      
-      // Asignar una imagen aleatoria a cada juego
+
       const gamesWithImages = data.map(game => ({
         ...game,
         imagen: images[Math.floor(Math.random() * images.length)]
@@ -69,14 +80,29 @@ const ViewGamesScreen = ({ route }) => {
 
   const handleAddGame = async (juegoId) => {
     try {
-      const response = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos/${juegoId}`, {
+      // Añadir el usuario a la sala
+      if (usuarioId) {
+        const responseUsuario = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${usuarioId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log("usuario anadido");
+        if (!responseUsuario.ok) {
+          throw new Error('Error al añadir el usuario a la sala');
+        }
+      }
+
+      // Añadir el juego a la sala
+      const responseJuego = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos/${juegoId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      if (!response.ok) {
+      if (!responseJuego.ok) {
         throw new Error('Error al agregar el juego');
       }
 
@@ -118,7 +144,6 @@ const ViewGamesScreen = ({ route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Picker para seleccionar la categoría */}
       <Picker
         selectedValue={categoria}
         style={styles.picker}
