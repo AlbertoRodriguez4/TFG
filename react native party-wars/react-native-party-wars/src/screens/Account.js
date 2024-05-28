@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -131,8 +132,10 @@ const EditProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Editar Perfil</Text>
-      <TouchableOpacity onPress={pickImage}>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Editar tu <Text style={styles.titleBold}>Cuenta</Text></Text>
+      </View>
+      <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
         {urlImagen ? (
           <Image source={{ uri: newImage ? newImage : urlImagen }} style={styles.image} />
         ) : (
@@ -141,11 +144,52 @@ const EditProfileScreen = () => {
           </View>
         )}
       </TouchableOpacity>
-      <TextInput placeholder="Nombre" value={nome} onChangeText={setNome} style={styles.input} />
-      <TextInput placeholder="Correo electrónico" value={email} onChangeText={setEmail} style={styles.input} />
-      <TextInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
-      <TextInput placeholder="Descripción personal" value={descripcionPersonal} onChangeText={setDescripcionPersonal} style={styles.input} />
-      <Button title="Actualizar Perfil" onPress={handleUpdateProfile} />
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        style={styles.bottomSection}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <TextInput
+          placeholder="Nombre"
+          placeholderTextColor="#ffffff"
+          value={nome}
+          onChangeText={setNome}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Correo electrónico"
+          placeholderTextColor="#ffffff"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor="#ffffff"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Descripción personal"
+          placeholderTextColor="#ffffff"
+          value={descripcionPersonal}
+          onChangeText={setDescripcionPersonal}
+          style={styles.input}
+        />
+        <TouchableOpacity style={styles.buttonContainer} onPress={handleUpdateProfile}>
+          <LinearGradient
+            colors={['#313131', '#000000']}
+            style={styles.button}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.buttonText}>Actualizar Perfil</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </LinearGradient>
     </View>
   );
 };
@@ -156,28 +200,79 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    marginVertical: 10,
-    width: 250,
+  topSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#313131',
+    width: '100%',
+    paddingVertical: 20,
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: '20%',
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  bottomSection: {
+    flex: 2,
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  title: {
+    fontSize: 40,
+    color: '#ffffff',
+    marginBottom: 20,
+  },
+  titleBold: {
+    fontWeight: 'bold',
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
+    borderColor: '#ffffff',
+    borderWidth: 2,
     marginVertical: 10,
   },
   profileIcon: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     backgroundColor: 'lightgray',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 75,
     marginVertical: 10,
   },
   iconText: {
     fontSize: 50,
     color: 'gray',
+  },
+  input: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 10,
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
 });
 
