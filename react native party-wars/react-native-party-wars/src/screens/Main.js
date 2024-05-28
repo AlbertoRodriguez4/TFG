@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -19,9 +19,6 @@ const Main = () => {
     fetchSalas();
     fetchEventos();
     loadUserData();
-    const intervalId = setInterval(fetchSalas, 2000);
-
-    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
@@ -48,10 +45,10 @@ const Main = () => {
     }
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    fetchSalas();
-    fetchEventos();
+    await fetchSalas();
+    await fetchEventos();
     setRefreshing(false);
   };
 
@@ -63,10 +60,8 @@ const Main = () => {
         const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`);
         const data = await response.json();
 
-        console.log("Plan recibido del servidor:", data.plan);
         setPlan(data.plan);
         setId(id);
-        console.log("ID y plan después de establecerlos:", id, plan);
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
@@ -101,12 +96,7 @@ const Main = () => {
   };
 
   const handleFilterByTematica = (tematica) => {
-    if (selectedTematica === tematica) {
-      setSelectedTematica('');
-    } else {
-      setSelectedTematica(tematica);
-    }
-    filterItems();
+    setSelectedTematica(selectedTematica === tematica ? '' : tematica);
   };
 
   const renderTematicaCircle = (tematica) => (
@@ -160,17 +150,9 @@ const Main = () => {
     navigation.navigate('CrearEvento');
   };
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }
-      >
+  const renderHeader = () => (
+    <View>
+      <View style={styles.header}>
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
@@ -180,24 +162,47 @@ const Main = () => {
           />
           <Button title="Buscar" onPress={handleSearch} />
         </View>
-        <View style={styles.tematicasContainer}>
-          {tematicas.map(renderTematicaCircle)}
-        </View>
-        <Text style={styles.title}>Eventos y Salas Disponibles</Text>
-        <FlatList
-          data={filteredItems}
-          renderItem={({ item }) =>
-            item.tematicaSala ? renderSalaCard({ item }) : renderEventoCard({ item })
-          }
-          keyExtractor={(item) => (item.tematicaSala ? `sala-${item.id}` : `evento-${item.id}`)}
-          style={styles.flatList}
-        />
-        {plan === 'Business' ? (
-          <Button title="Crear Evento" onPress={handleCrearEvento} />
-        ) : (
-          <Button title="Crear Sala" onPress={handleCrearSala} />
-        )}
-      </ScrollView>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Image
+            source={require('../assets/perfil.png')}
+            style={styles.profileIcon}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.tematicasContainer}>
+        {tematicas.map(renderTematicaCircle)}
+      </View>
+      <Text style={styles.title}>Eventos y Salas Disponibles</Text>
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.footer}>
+      {plan === 'Business' ? (
+        <Button title="Crear Evento" onPress={handleCrearEvento} />
+      ) : (
+        <Button title="Crear Sala" onPress={handleCrearSala} />
+      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={filteredItems}
+        renderItem={({ item }) =>
+          item.tematicaSala ? renderSalaCard({ item }) : renderEventoCard({ item })
+        }
+        keyExtractor={(item) => (item.tematicaSala ? `sala-${item.id}` : `evento-${item.id}`)}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      />
     </View>
   );
 };
@@ -208,6 +213,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -217,7 +228,8 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    flex: 1,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
@@ -231,66 +243,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   tematicaCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'black',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     margin: 5,
+    backgroundColor: 'black',
   },
   tematicaText: {
     color: 'white',
     textAlign: 'center',
+    fontSize: 12,
   },
   card: {
-    backgroundColor: '#f9f9f9',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: 'white',
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
   },
   cardDescription: {
-    marginBottom: 10,
+    marginVertical: 5,
+    color: '#666',
   },
   cardInfo: {
-    color: '#666',
-    marginBottom: 5,
+    marginVertical: 5,
   },
   button: {
     backgroundColor: '#007bff',
-    padding: 15,
     borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    color: 'white',
     fontSize: 16,
   },
-  flatList: {
-    flexGrow: 1,
-  },
   image: {
-    width: 200,
+    width: '100%',
     height: 200,
     marginVertical: 10,
+  },
+  footer: {
+    marginVertical: 20,
+  },
+  profileIcon: {
+    width: 30,
+    height: 30,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -61,37 +61,99 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={styles.container}>
       {loggedInUser ? (
         <>
-          <Text>Bienvenido, {loggedInUser}</Text>
+          <Text style={styles.welcomeText}>Bienvenido, {loggedInUser}</Text>
           <Button title="Cerrar Sesión" onPress={handleLogout} />
         </>
       ) : (
         <>
-          <Text>Inicio de Sesión</Text>
-          <TextInput
-            placeholder="Correo electrónico"
-            value={email}
-            onChangeText={setEmail}
-            style={{ borderWidth: 1, padding: 10, marginVertical: 10, width: 250 }}
-          />
-          <TextInput
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={{ borderWidth: 1, padding: 10, marginVertical: 10, width: 250 }}
-          />
-          <Button title="Iniciar Sesión" onPress={handleLogin} />
-          {loginError && (
-            <Text style={{ color: 'red' }}>El correo o la contraseña es incorrecto, inténtelo de nuevo</Text>
-          )}
-          <Text style={{ marginVertical: 10 }}>¿No tienes una cuenta aún? <Text style={{ color: 'blue' }} onPress={handleRegister}>Registrarse</Text></Text>
+          <Image source={require('../assets/perfil.png')}
+            style={styles.logo} />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Nombre de Usuario"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Entrar</Text>
+            </TouchableOpacity>
+            {loginError && (
+              <Text style={styles.errorText}>El correo o la contraseña es incorrecto, inténtelo de nuevo</Text>
+            )}
+            <Text style={styles.registerText}>
+              ¿No tienes una cuenta aún?{' '}
+              <Text style={styles.registerLink} onPress={handleRegister}>
+                Crear cuenta
+              </Text>
+            </Text>
+          </View>
         </>
       )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff', // Cambia esto según el fondo deseado
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+  inputContainer: {
+    width: '80%',
+    alignItems: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    width: '100%',
+  },
+  button: {
+    backgroundColor: '#FFA500', // Color naranja
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    marginVertical: 10,
+  },
+  registerText: {
+    marginVertical: 10,
+  },
+  registerLink: {
+    color: 'blue',
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+});
 
 export default LoginScreen;
