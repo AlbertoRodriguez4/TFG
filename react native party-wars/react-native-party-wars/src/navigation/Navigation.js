@@ -150,6 +150,36 @@ export default function Navigation() {
             ),
           }}
         />
+       <Tab.Screen
+          name="CrearEvento"
+          component={CrearEvento}
+          options={{
+            tabBarLabel: 'Crear Evento',
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="plus" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="verDatosEventos"
+          component={verDatosEventos}
+          options={{
+            tabBarLabel: 'Ver Eventos',
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="calendar-alt" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="CompraDeEntradas"
+          component={CompraDeEntradas}
+          options={{
+            tabBarLabel: 'Comprar Entradas',
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="ticket-alt" color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
 
       {/* FAB para navegación */}
