@@ -84,6 +84,7 @@ export class UsuarioService {
   async sendRandomCodeByEmail(email: string): Promise<string> {
     const randomCode = this.generateRandomCode();
     this.verificationCodes[email] = randomCode; // Almacenar el código en memoria
+    console.log('Almacenado en verificationCodes:', this.verificationCodes);
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -96,20 +97,25 @@ export class UsuarioService {
     const mailOptions = {
       from: 'partywarsoficial@gmail.com',
       to: email,
-      subject: 'Tu Código Aleatorio',
+      subject: '¡Bienvenido a Party Wars! Aquí está tu Código Verificación',
       html: `
-        <h1>Código Aleatorio</h1>
-        <p style="font-size: 2em; font-weight: bold">Tu código aleatorio es: <strong>${randomCode}</strong></p>
+        <h1>¡Bienvenido a Party Wars!</h1>
+        <p>Gracias por unirte a nuestra familia. Estamos emocionados de que formes parte de Party Wars, donde cada fiesta es una batalla para recordar.</p>
+        <p>Para comenzar, aquí tienes tu código de verificación:</p>
+        <p style="font-size: 2em; font-weight: bold; color: #FF5733;">${randomCode}</p>
+        <p>Usa este código para activar tu cuenta y descubrir todas las sorpresas que tenemos preparadas para ti.</p>
+        <p>¡Prepárate para la revolución de las fiestas!</p>
+        <p>Saludos,<br>El equipo de Party Wars</p>
       `,
     };
-    console.log(randomCode);
+    console.log(`Código de verificación generado para ${email}: ${randomCode}`);
     await transporter.sendMail(mailOptions);
 
     return randomCode;
   }
 
   verifyCode(email: string, code: string): boolean {
-    console.log(this.verificationCodes[email], code);
+    console.log(`Verificando código para ${email}: almacenado - ${this.verificationCodes[email]}, recibido - ${code}`);
     return this.verificationCodes[email] === code;
   }
 }

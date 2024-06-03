@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, Alert, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const CreateGameScreen = () => {
   const [nombre, setNombre] = useState('');
@@ -8,6 +10,8 @@ const CreateGameScreen = () => {
   const [descripcionJuego, setDescripcionJuego] = useState('');
   const [categoriaJuego, setCategoriaJuego] = useState('');
   const [normasJuego, setNormasJuego] = useState('');
+  const [fechaJuego, setFechaJuego] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const [idNavigationJuegos, setIdNavigationJuegos] = useState(null);
@@ -21,13 +25,13 @@ const CreateGameScreen = () => {
 
   const handleCreateGame = async () => {
     try {
-      // Imprimir los datos antes de enviar la solicitud al backend
       console.log('Datos del juego:', {
         nombre,
         propiedadJuego,
         descripcionJuego,
         categoriaJuego,
         normasJuego,
+        fechaJuego,
       });
 
       const response = await fetch('http://192.168.1.90:3000/juegos', {
@@ -41,6 +45,7 @@ const CreateGameScreen = () => {
           descripcionJuego,
           categoriaJuego,
           normasJuego,
+          fechaJuego,
         }),
       });
 
@@ -48,15 +53,14 @@ const CreateGameScreen = () => {
         throw new Error('Error al crear el juego');
       }
 
-      // Si el juego se crea correctamente, muestra un mensaje de éxito
       Alert.alert('Juego Creado', 'El juego se ha creado exitosamente');
-      
-      // Limpiar los campos después de crear el juego
+
       setNombre('');
       setPropiedadJuego('');
       setDescripcionJuego('');
       setCategoriaJuego('');
       setNormasJuego('');
+      setFechaJuego(new Date());
       navigation.navigate('VerJuegos', { idNavigationJuegos: idNavigationJuegos });
     } catch (error) {
       console.error('Error al crear el juego:', error);
@@ -64,58 +68,87 @@ const CreateGameScreen = () => {
     }
   };
 
+  const onChangeFecha = (event, selectedDate) => {
+    const currentDate = selectedDate || fechaJuego;
+    setShowPicker(false);
+    setFechaJuego(currentDate);
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={require('../assets/izquierda.png')} style={styles.icon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Partida Privada</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Image source={require('../assets/hogar.png')} style={styles.icon} />
-        </TouchableOpacity>
-      </View>
-      <Image source={require('../assets/mono-business.jpg')} style={styles.gameImage} />
-      <View style={styles.content}>
-        <Text style={styles.label}>Nombre del juego:</Text>
-        <TextInput
-          placeholder="Nombre"
-          value={nombre}
-          onChangeText={setNombre}
-          style={styles.input}
-        />
-        <Text style={styles.label}>Temática del juego</Text>
-        <TextInput
-          placeholder="Propiedad del Juego"
-          value={propiedadJuego}
-          onChangeText={setPropiedadJuego}
-          style={styles.input}
-        />
-        <Text style={styles.label}>Descripcion</Text>
-        <TextInput
-          placeholder="Descripción del Juego"
-          value={descripcionJuego}
-          onChangeText={setDescripcionJuego}
-          style={styles.input}
-        />
-        <Text style={styles.label}>Normas</Text>
-        <TextInput
-          placeholder="Normas del Juego"
-          value={normasJuego}
-          onChangeText={setNormasJuego}
-          style={styles.input}
-        />
-        <Text style={styles.label}>Categoría</Text>
-        <TextInput
-          placeholder="Categoría del Juego"
-          value={categoriaJuego}
-          onChangeText={setCategoriaJuego}
-          style={styles.input}
-        />
-      </View>
-      <TouchableOpacity style={styles.createButton} onPress={handleCreateGame}>
-        <Text style={styles.createButtonText}>Crear Juego 🏆</Text>
-      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.topSection}>
+          <Text style={styles.title}>Crear <Text style={styles.titleBold}>Juego</Text></Text>
+        </View>
+
+        <LinearGradient
+          colors={['#FFDE59', '#FF914D']}
+          style={styles.bottomSection}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Image source={require('../assets/mono-business.jpg')} style={styles.image} />
+
+          <TextInput
+            placeholder="Nombre del Juego"
+            placeholderTextColor="#ffffff"
+            value={nombre}
+            onChangeText={setNombre}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Temática del Juego"
+            placeholderTextColor="#ffffff"
+            value={propiedadJuego}
+            onChangeText={setPropiedadJuego}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Descripción del Juego"
+            placeholderTextColor="#ffffff"
+            value={descripcionJuego}
+            onChangeText={setDescripcionJuego}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Normas del Juego"
+            placeholderTextColor="#ffffff"
+            value={normasJuego}
+            onChangeText={setNormasJuego}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Categoría del Juego"
+            placeholderTextColor="#ffffff"
+            value={categoriaJuego}
+            onChangeText={setCategoriaJuego}
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.dateInput}>
+            <Text style={styles.dateText}>{fechaJuego.toLocaleString()}</Text>
+          </TouchableOpacity>
+          {showPicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={fechaJuego}
+              mode="datetime"
+              is24Hour={true}
+              display="default"
+              onChange={onChangeFecha}
+            />
+          )}
+          <TouchableOpacity style={styles.buttonContainer} onPress={handleCreateGame}>
+            <LinearGradient
+              colors={['#313131', '#313131']}
+              style={styles.button}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.buttonText}>Crear Juego 🏆</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </LinearGradient>
+      </ScrollView>
     </View>
   );
 };
@@ -123,64 +156,85 @@ const CreateGameScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#313131',
   },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#000',
   },
-  icon: {
-    width: 24,
-    height: 24,
-    tintColor: '#fff',
+  topSection: {
+    top: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 150,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
+  bottomSection: {
+    paddingTop: 80,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: 120,
+  },
+  title: {
+    fontSize: 30,
+    color: '#ffffff',
+    marginBottom: 20,
+  },
+  titleBold: {
+    fontSize: 30,
     fontWeight: 'bold',
   },
-  gameImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-    alignSelf: 'flex-start',
-    color: '#FFD700',
+  image: {
+    width: 250,
+    height: 150,
+    borderColor: '#ffffff',
+    borderWidth: 2,
+    marginVertical: 10,
+    borderRadius: 15,
+    top: -100,
+    position: 'absolute',
   },
   input: {
-    width: '100%',
+    width: '80%',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ffffff',
     padding: 10,
     borderRadius: 10,
-    marginTop: 5,
-    backgroundColor: '#fff',
-    color: '#000',
+    marginVertical: 10,
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    fontSize: 17,
   },
-  createButton: {
-    backgroundColor: '#FFA726',
+  dateInput: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 10,
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+  },
+  dateText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  button: {
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    margin: 10,
   },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 18,
+  buttonText: {
+    color: '#ffffff',
     fontWeight: 'bold',
   },
 });

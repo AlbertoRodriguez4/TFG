@@ -1,17 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Button, TextInput, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
-const CompraEntradas = ({ route, navigation }) => {
+const CompraEntradas = ({ route }) => {
   const { eventoId } = route.params;
-  const [cantidadEntradas, setCantidadEntradas] = useState(0); // Cambiado a número
+  const [cantidadEntradas, setCantidadEntradas] = useState(0);
   const [qrValue, setQrValue] = useState('');
   const [compraRealizada, setCompraRealizada] = useState(false);
   const [eventoInfo, setEventoInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [precioEntrada, setPrecioEntrada] = useState(null);
-  const [costoTotal, setCostoTotal] = useState(0); // Inicializado a 0
+  const [costoTotal, setCostoTotal] = useState(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
@@ -21,7 +23,10 @@ const CompraEntradas = ({ route, navigation }) => {
   const [paypalEmail, setPaypalEmail] = useState('');
   const [paypalPassword, setPaypalPassword] = useState('');
   const [id, setId] = useState(0);
-  const [email, setEmail] = useState(''); 
+  const [email, setEmail] = useState('');
+
+  const navigation = useNavigation();
+
   useEffect(() => {
     const fetchEventData = async () => {
       try {
@@ -31,7 +36,7 @@ const CompraEntradas = ({ route, navigation }) => {
         setPrecioEntrada(eventData.precioEntrada);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error al obtener los datos del evento:', error);
+        ('Error al obtener los datos del evento:', error);
         Alert.alert('Error', 'Hubo un problema al obtener los datos del evento. Por favor, intenta de nuevo.');
         setIsLoading(false);
       }
@@ -57,7 +62,7 @@ const CompraEntradas = ({ route, navigation }) => {
         setId(id);
       }
     } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error);
+      ('Error al cargar los datos del usuario:', error);
     }
   };
 
@@ -66,9 +71,11 @@ const CompraEntradas = ({ route, navigation }) => {
       const response = await fetch(`http://192.168.1.90:3000/usuarios/${id}`);
       const emailData = await response.json();
       setEmail(emailData.email);
-  } catch (error) {
-  }
-}
+    } catch (error) {
+      ('Error al cargar el email del usuario:', error);
+    }
+  };
+
   const handleCompra = async () => {
     try {
       if (cantidadEntradas <= 0) {
@@ -107,16 +114,16 @@ const CompraEntradas = ({ route, navigation }) => {
               setQrValue(JSON.stringify(compraDetails));
               setCompraRealizada(true);
               setLoadingPayment(false);
-              
+
               try {
                 const response = await fetch(`http://192.168.1.90:3000/eventos/${eventoId}/comprar`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ 
-                    email: email, // Reemplaza con el correo electrónico del usuario
-                    cantidadEntradas 
+                  body: JSON.stringify({
+                    email: email,
+                    cantidadEntradas,
                   }),
                 });
 
@@ -126,7 +133,7 @@ const CompraEntradas = ({ route, navigation }) => {
                   Alert.alert('Comprueba que tu correo elecotrónico es válido en el apartado de perfil');
                 }
               } catch (error) {
-                console.error('Error al enviar el correo electrónico:', error);
+                ('Error al enviar el correo electrónico:', error);
                 Alert.alert('Error', 'Hubo un problema al enviar el correo electrónico. Por favor, intenta de nuevo.');
               }
             },
@@ -135,7 +142,7 @@ const CompraEntradas = ({ route, navigation }) => {
         { cancelable: false }
       );
     } catch (error) {
-      console.error('Error al realizar la compra:', error.message);
+      ('Error al realizar la compra:', error.message);
       Alert.alert('Error', 'Hubo un problema al realizar la compra. Por favor, intenta de nuevo.');
       setLoadingPayment(false);
     }
@@ -202,37 +209,75 @@ const CompraEntradas = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      {!compraRealizada ? (
-        <>
-          <Text style={styles.title}>Compra de Entradas</Text>
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventInfoText}>Localización del evento: {eventoInfo.localizacion}</Text>
-            <Text style={styles.eventInfoText}>Fecha del evento: {eventoInfo.fechaEvento}</Text>
-            {precioEntrada && (
-              <Text style={styles.eventInfoText}>Precio de la entrada: {precioEntrada}€</Text>
-            )}
-            <Text style={styles.eventInfoText}>Costo total: {costoTotal}€</Text>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Compra de <Text style={styles.titleBold}>Entradas</Text></Text>
+      </View>
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        style={styles.bottomSection}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {!compraRealizada ? (
+          <>
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventInfoText}>Localización del evento: {eventoInfo.localizacion}</Text>
+              <Text style={styles.eventInfoText}> </Text>
+              <Text style={styles.eventInfoText}>Fecha del evento: {eventoInfo.fechaEvento}</Text>
+              <Text style={styles.eventInfoText}> </Text>
+
+              {precioEntrada && (
+                <Text style={styles.eventInfoText}>Precio de la entrada: {precioEntrada}€</Text>
+              )}
+
+              <Text style={styles.eventInfoText}>Costo total: {costoTotal}€</Text>
+            </View>
+            <View style={styles.counterContainer}>
+              <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(Math.max(0, cantidadEntradas - 1))}>
+                <Text style={styles.buttonCustomText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterText}>{cantidadEntradas}</Text>
+              <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(cantidadEntradas + 1)}>
+                <Text style={styles.buttonCustomText}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.paymentOptions}>
+              <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('card')}>
+                <Text style={styles.paymentButtonText}>Pagar con Tarjeta</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('paypal')}>
+                <Text style={styles.paymentButtonText}>Pagar con PayPal</Text>
+              </TouchableOpacity>
+            </View>
+            {paymentForm}
+            <TouchableOpacity style={styles.buttonContainer} onPress={handleCompra} disabled={loadingPayment}>
+              <LinearGradient
+                colors={['#313131', '#313131']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Confirmar Pago</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            {loadingPayment && <ActivityIndicator size="large" color="#0000ff" />}
+          </>
+        ) : (
+          <View style={styles.qrContainer}>
+            <QRCode value={qrValue} size={200} />
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate('Main')}>
+              <LinearGradient
+                colors={['#313131', '#313131']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Volver a la pantalla principal</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
-          <View style={styles.counterContainer}>
-            <Button title="-" onPress={() => setCantidadEntradas(Math.max(0, cantidadEntradas - 1))} />
-            <Text style={styles.counterText}>{cantidadEntradas}</Text>
-            <Button title="+" onPress={() => setCantidadEntradas(cantidadEntradas + 1)} />
-          </View>
-          <View style={styles.paymentOptions}>
-            <Button title="Pagar con Tarjeta" onPress={() => setSelectedPaymentMethod('card')} />
-            <Button title="Pagar con PayPal" onPress={() => setSelectedPaymentMethod('paypal')} />
-          </View>
-          {paymentForm}
-          <Button title="Confirmar Pago" onPress={handleCompra} disabled={loadingPayment} />
-          {loadingPayment && <Text style={styles.loadingText}>Realizando pago...</Text>}
-        </>
-      ) : (
-        <View style={styles.qrContainer}>
-          <Text style={styles.title}>Entrada Comprada</Text>
-          <QRCode value={qrValue} size={200} />
-          <Text style={styles.qrText}>QR que habrá que enseñar en la entrada</Text>
-        </View>
-      )}
+        )}
+      </LinearGradient>
     </View>
   );
 };
@@ -242,63 +287,117 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#313131',
   },
-  loadingContainer: {
+  topSection: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#313131',
+    width: '100%',
+    paddingVertical: 20,
   },
-  loadingText: {
-    marginTop: 20,
-    fontSize: 18,
+  bottomSection: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flex: 3.5,
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 60,
+    marginHorizontal: 25,
+    paddingHorizontal: 10,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 30,
+    color: '#ffffff',
     marginBottom: 20,
+    bottom: -10,
   },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 20,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
+  titleBold: {
+    fontSize: 30,
+    fontWeight: 'bold',
   },
   eventInfo: {
     marginBottom: 20,
   },
   eventInfoText: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18,
+    color: '#ffffff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   counterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    width: '50%',
   },
   counterText: {
     fontSize: 20,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
+    color: '#ffffff',
   },
+  paymentOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '80%',
+    marginBottom: 20,
+  },
+  input: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 10,
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  buttonCustom: {
+    backgroundColor: '#313131',
+    padding: 10,
+    borderRadius: 10,
+  },
+  buttonCustomText: {
+    color: '#ffffff',
+    fontSize: 20,
+  },
+  paymentButton: {
+    backgroundColor: '#313131',
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  paymentButtonText: {
+    color: '#ffffff',
+  },
+
   qrContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  qrText: {
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: 'bold',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  paymentOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
+    color: '#0000ff',
   },
 });
 

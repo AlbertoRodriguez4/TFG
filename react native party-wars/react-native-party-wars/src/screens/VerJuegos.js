@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ViewGamesScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -134,43 +135,54 @@ const ViewGamesScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={require('../assets/izquierda.png')} style={styles.icon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Partida Privada</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Main')}>
-          <Image source={require('../assets/hogar.png')} style={styles.icon} />
-        </TouchableOpacity>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.topSection}>
+          <Text style={styles.title}>Partida <Text style={styles.titleBold}>Privada</Text></Text>
+        </View>
 
-      <Picker
-        selectedValue={categoria}
-        style={styles.picker}
-        onValueChange={(itemValue) => setCategoria(itemValue)}
-      >
-        <Picker.Item label="Seleccione una categoría" value="" />
-        <Picker.Item label="Tablero" value="Tablero" />
-        <Picker.Item label="Bebida" value="Bebida" />
-        {/* Agrega más categorías según sea necesario */}
-      </Picker>
+        <LinearGradient
+          colors={['#FFDE59', '#FF914D']}
+          style={styles.bottomSection}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Picker
+            selectedValue={categoria}
+            style={styles.picker}
+            onValueChange={(itemValue) => setCategoria(itemValue)}
+          >
+            <Picker.Item label="Seleccione una categoría" value="" />
+            <Picker.Item label="Tablero" value="Tablero" />
+            <Picker.Item label="Bebida" value="Bebida" />
+            {/* Agrega más categorías según sea necesario */}
+          </Picker>
 
-      <FlatList
-        data={games}
-        renderItem={renderGameItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-      />
-      <Text style={styles.createOwnText}>
-        Agrega los juegos a la sala al pinchar encima de ellos 
-      </Text>
-      <TouchableOpacity style={styles.createButton} onPress={handleCrearSala}>
-        <Text style={styles.createButtonText}>Crear Sala</Text>
-      </TouchableOpacity>
-      
-      <Text style={styles.createOwnText}>
-        ¿No ves ningún juego que te convenza? <Text style={styles.createOwnLink} onPress={handleCrearJuego}>¡Crea el tuyo!</Text>
-      </Text>
+          <FlatList
+            data={games}
+            renderItem={renderGameItem}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.list}
+          />
+
+          <Text style={styles.createOwnText}>
+            Agrega los juegos a la sala al pinchar encima de ellos 
+          </Text>
+          <TouchableOpacity style={styles.createButton} onPress={handleCrearSala}>
+            <LinearGradient
+              colors={['#313131', '#313131']}
+              style={styles.createButton}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.createButtonText}>Crear Sala</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          
+          <Text style={styles.createOwnText}>
+            ¿No ves ningún juego que te convenza? <Text style={styles.createOwnLink} onPress={handleCrearJuego}>¡Crea el tuyo!</Text>
+          </Text>
+        </LinearGradient>
+      </ScrollView>
     </View>
   );
 };
@@ -178,26 +190,48 @@ const ViewGamesScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#313131',
   },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#000000',
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    tintColor: '#ffffff',
-  },
-  headerTitle: {
-    color: '#ffffff',
-    fontSize: 18,
     fontWeight: 'bold',
+
+  },
+  topSection: {
+    flex: 1,
+
+    top: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 90,
+  },
+  bottomSection: {
+    flex: 3,
+    paddingTop: 10,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: 120,
+  },
+  title: {
+    fontSize: 30,
+    color: '#ffffff',
+    marginBottom: 20,
+  },
+  titleBold: {
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
+  picker: {
+    width: '80%',
+    marginVertical: 10,
+    color: '#ffffff',
+        fontWeight: 'bold',
+
   },
   list: {
     padding: 10,
@@ -225,7 +259,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   createButton: {
-    backgroundColor: '#FFA726',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -238,7 +271,11 @@ const styles = StyleSheet.create({
   },
   createOwnText: {
     textAlign: 'center',
-    marginVertical: 10,
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    paddingHorizontal: 20,
+
   },
   createOwnLink: {
     color: 'blue',
@@ -248,13 +285,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  picker: {
-    height: 50,
-    width: '100%',
-    marginVertical: 10,
-  },
   text: {
-    // Ajustes de estilo para los textos dentro de los elementos de juego
+    color: '#000000',
   },
 });
 

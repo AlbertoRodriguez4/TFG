@@ -239,6 +239,28 @@ export default function Navigation() {
             >
               <Icon name="gamepad" size={25} color="#fff" />
             </TouchableOpacity>
+
+
+
+            <TouchableOpacity
+              style={styles.fabButton5}
+              onPress={() => {
+                setFabActive(false);
+                navigation.navigate('PlanPremium');
+              }}
+            >
+              <Icon name="heart" size={25} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.fabButton6}
+              onPress={() => {
+                setFabActive(false);
+                navigation.navigate('PlanBusiness');
+              }}
+            >
+              <Icon name="star" size={25} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -321,16 +343,30 @@ const styles = StyleSheet.create({
     left: 70,
     top: 55,
   },
-
-  fabPrincipal: {
-    position: 'absolute',
+  fabButton5: {
     backgroundColor: '#313131',
-    width: 120, // Aumenta el ancho del botón
-    height: 120, // Aumenta la altura del botón
+    width: 60,
+    height: 60,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 40, // Ajusta el radio para mantenerlo circular
+    marginBottom: 10,
+    left: 10,
+    top: -80,
   },
+  fabButton6: {
+    backgroundColor: '#313131',
+    width: 60,
+    height: 60,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    left: -220,
+    top: -80,
+  },
+
+  
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1,
@@ -343,7 +379,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
-
-
-
-

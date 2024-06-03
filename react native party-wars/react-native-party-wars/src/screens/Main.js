@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, RefreshControl, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Main = () => {
   const navigation = useNavigation();
@@ -31,7 +32,7 @@ const Main = () => {
       const data = await response.json();
       setSalas(data);
     } catch (error) {
-      console.error('Error al cargar las salas:', error);
+      console.error(error);
     }
   };
 
@@ -41,7 +42,7 @@ const Main = () => {
       const data = await response.json();
       setEventos(data);
     } catch (error) {
-      console.error('Error al cargar los eventos:', error);
+      console.error(error);
     }
   };
 
@@ -64,7 +65,7 @@ const Main = () => {
         setId(id);
       }
     } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error);
+      console.error(error);
     }
   };
 
@@ -73,19 +74,18 @@ const Main = () => {
 
     if (searchQuery) {
       filtered = filtered.filter(item =>
-        item.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.nombreSala?.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.nombre && item.nombre.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (item.nombreSala && item.nombreSala.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
     if (selectedTematica) {
       filtered = filtered.filter(item =>
-        item.tematicaSala?.toLowerCase() === selectedTematica.toLowerCase() ||
-        item.tematicaEvento?.toLowerCase() === selectedTematica.toLowerCase()
+        (item.tematicaSala && item.tematicaSala.toLowerCase() === selectedTematica.toLowerCase()) ||
+        (item.tematicaEvento && item.tematicaEvento.toLowerCase() === selectedTematica.toLowerCase())
       );
     }
 
-    // Ordenar los elementos, los eventos primero
     filtered.sort((a, b) => (a.tematicaEvento ? -1 : 1));
 
     setFilteredItems(filtered);
@@ -103,43 +103,78 @@ const Main = () => {
     <TouchableOpacity
       key={tematica}
       onPress={() => handleFilterByTematica(tematica)}
-      style={[styles.tematicaCircle, { backgroundColor: selectedTematica === tematica ? 'gray' : 'black' }]}
+      style={[styles.tematicaCircle, { backgroundColor: selectedTematica === tematica ? '#FF914D' : 'black' }]}
     >
-      <Text style={styles.tematicaText}>{tematica}</Text>
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.tematicaGradient}
+      >
+        <Text style={styles.tematicaText}>{tematica}</Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
-  const renderSalaCard = ({ item }) => (
+  const renderSalaCard = (item) => (
     <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.card}>
-      <Text style={styles.cardTitle}>{item.nombre}</Text>
-      <Text style={styles.cardDescription}>{item.descripcion}</Text>
-      <Text style={styles.cardInfo}>Temática: {item.tematicaSala}</Text>
-      <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinima}</Text>
-      <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxima}</Text>
-      <Text style={styles.cardInfo}>Localización: {item.localizacionSala}</Text>
-      <Text style={styles.cardInfo}>Fecha: {item.fecha}</Text>
-
-      <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.button}>
-        <Text style={styles.buttonText}>Ver Detalles</Text>
-      </TouchableOpacity>
+      <LinearGradient
+        colors={['#7cfff7', '#ff88e5']}
+        style={styles.cardContent}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.salaHeader}>
+          <Text style={styles.cardTitle}>{item.nombre}</Text>
+          <Text style={styles.cardDescription}>{item.descripcion}</Text>
+        </View>
+        <View style={styles.salaInfoContainer}>
+          <Text style={styles.cardInfo}>Temática: {item.tematicaSala}</Text>
+          <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinima}</Text>
+          <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxima}</Text>
+          <Text style={styles.cardInfo}>Localización: {item.localizacionSala}</Text>
+          <Text style={styles.cardInfo}>Fecha: {item.fecha}</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('VerDatosSalas', { salaId: item.id })} style={styles.button}>
+          <LinearGradient
+            colors={['#FFDE59', '#FF914D']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.buttonGradient}
+          >
+            <Text style={styles.buttonText}>Ver Detalles</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
-  const renderEventoCard = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.card}>
-      <Text style={styles.cardTitle}>{item.nombreSala}</Text>
-      <Text style={styles.cardDescription}>{item.descripcionEnvento}</Text>
-      <Text style={styles.cardInfo}>Temática: {item.tematicaEvento}</Text>
-      <Text style={styles.cardInfo}>Edad Mínima: {item.edadMinEvento}</Text>
-      <Text style={styles.cardInfo}>Edad Máxima: {item.edadMaxEvento}</Text>
-      <Text style={styles.cardInfo}>Localización: {item.localizacion}</Text>
-      {item.imagen && (
-        <Image source={{ uri: item.imagen }} style={styles.image} />
-      )}
-      <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
-        <Text style={styles.buttonText}>Ver Detalles</Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
+  const renderEventoCard = (item) => (
+    <View style={styles.bottomSection}>
+      <LinearGradient
+        colors={['#7cfff7', '#ff88e5']}
+        style={styles.card}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.cardContent}>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: item.imagen }} style={styles.image} />
+          </View>
+          <Text style={styles.cardTitle}>{item.nombreSala}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
+            <LinearGradient
+              colors={['#FFDE59', '#FF914D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>Ver Detalles</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </LinearGradient>
+    </View>
   );
 
   const handleCrearSala = () => {
@@ -152,154 +187,242 @@ const Main = () => {
 
   const renderHeader = () => (
     <View>
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            placeholder="Buscar por nombre de sala o evento"
-          />
-          <Button title="Buscar" onPress={handleSearch} />
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Salas Y Eventos Party Wars <Text style={styles.titleBold}></Text></Text>
+        <View style={styles.header}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInput}>
+              <TextInput
+                onChangeText={setSearchQuery}
+                value={searchQuery}
+                placeholder="Buscar por nombre de sala o evento"
+                placeholderTextColor="white"
+                style={styles.textInput}
+              />
+              <TouchableOpacity onPress={handleSearch}>
+                <Image
+                  source={require('../assets/lupa.png')}
+                  style={styles.lupaIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Image
+              source={require('../assets/perfil.png')}
+              style={styles.profileIcon}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Image
-            source={require('../assets/perfil.png')}
-            style={styles.profileIcon}
-          />
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          {plan === 'Business' ? (
+            <TouchableOpacity onPress={handleCrearEvento}>
+              <LinearGradient
+                colors={['#FFDE59', '#FF914D']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradientCrearSalaEvento}
+              >
+                <Text style={styles.buttonText}>Crear Evento</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleCrearSala}>
+              <LinearGradient
+                colors={['#FFDE59', '#FF914D']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradientCrearSalaEvento}
+              >
+                <Text style={styles.buttonText}>Crear Sala</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       <View style={styles.tematicasContainer}>
-        {tematicas.map(renderTematicaCircle)}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tematicasScrollView}>
+          {tematicas.map((tematica) => renderTematicaCircle(tematica))}
+        </ScrollView>
       </View>
-      <Text style={styles.title}>Eventos y Salas Disponibles</Text>
     </View>
   );
 
-  const renderFooter = () => (
-    <View style={styles.footer}>
-      {plan === 'Business' ? (
-        <Button title="Crear Evento" onPress={handleCrearEvento} />
-      ) : (
-        <Button title="Crear Sala" onPress={handleCrearSala} />
-      )}
-    </View>
-  );
+  const renderItem = ({ item }) => {
+    if (item.tematicaEvento) {
+      return renderEventoCard(item);
+    } else if (item.tematicaSala) {
+      return renderSalaCard(item);
+    }
+    return null;
+  };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={filteredItems}
-        renderItem={({ item }) =>
-          item.tematicaSala ? renderSalaCard({ item }) : renderEventoCard({ item })
-        }
-        keyExtractor={(item) => (item.tematicaSala ? `sala-${item.id}` : `evento-${item.id}`)}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }
-      />
-    </View>
+    <FlatList
+      data={filteredItems}
+      keyExtractor={(item, index) => index.toString()}
+      renderItem={renderItem}
+      ListHeaderComponent={renderHeader}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron resultados.</Text>}
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#1a1a1a',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 30,
+    marginLeft: 20,
+  },
+  titleBold: {
+    fontWeight: '900',
+  },
+  profileIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    marginTop: 10,
+    padding: 10,
+    justifyContent: 'space-between',  // This ensures the search bar is on the left and the profile icon on the right
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-    marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   searchInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-  },
-  tematicasContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  tematicaCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
     alignItems: 'center',
-    margin: 5,
-    backgroundColor: 'black',
+    backgroundColor: '#333',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    flex: 1,
   },
-  tematicaText: {
+  textInput: {
+    flex: 1,
     color: 'white',
-    textAlign: 'center',
-    fontSize: 12,
   },
-  card: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: 'white',
+  lupaIcon: {
+    width: 20,
+    height: 20,
+    marginLeft: 10,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  cardDescription: {
-    marginVertical: 5,
-    color: '#666',
-  },
-  cardInfo: {
-    marginVertical: 5,
-  },
-  button: {
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    padding: 10,
-    alignItems: 'center',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 10,
   },
+  buttonGradientCrearSalaEvento: {
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
   buttonText: {
-    color: 'white',
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  tematicasContainer: {
+    marginTop: 10,
+    paddingBottom: 10,
+  },
+  tematicasScrollView: {
+    paddingLeft: 10,
+  },
+  tematicaCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  tematicaGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 40,
+  },
+  tematicaText: {
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 20,
+    margin: 10,
+    overflow: 'hidden',
+  },
+  cardContent: {
+    padding: 20,
+    borderRadius: 20,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  cardDescription: {
     fontSize: 16,
+    color: 'black',
+    marginTop: 5,
+  },
+  cardInfo: {
+    fontSize: 14,
+    color: 'black',
+    marginTop: 5,
+  },
+  button: {
+    marginTop: 10,
+    borderRadius: 20,
+  },
+  buttonGradient: {
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  bottomSection: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  imageContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
   },
   image: {
     width: '100%',
     height: 200,
-    marginVertical: 10,
+    borderRadius: 10,
   },
-  footer: {
-    marginVertical: 20,
+  noResultsText: {
+    color: 'white',
+    textAlign: 'center',
+    marginTop: 20,
   },
-  profileIcon: {
-    width: 30,
-    height: 30,
+  topSection: {
+    backgroundColor: '#2b2b2b',
+    paddingBottom: 10,
+  },
+  salaHeader: {
+    flexDirection: 'column',
+  },
+  salaInfoContainer: {
+    flexDirection: 'column',
+    marginTop: 10,
   },
 });
 

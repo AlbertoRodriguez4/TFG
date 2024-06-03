@@ -72,7 +72,9 @@ export class UsuarioController {
   verifyCode(
     @Body('email') email: string,
     @Body('code') code: string,
-  ): boolean {
-    return this.usuarioService.verifyCode(email, code);
+  ): { isValid: boolean } {
+    console.log("El codigo es" + code);
+    const isValid = this.usuarioService.verifyCode(email, code);
+    return { isValid };
   }
 }

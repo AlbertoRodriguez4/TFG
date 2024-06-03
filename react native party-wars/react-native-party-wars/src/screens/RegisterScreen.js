@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { storage } from '../../FirebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -17,8 +18,8 @@ const RegisterScreen = () => {
   const [errorText, setErrorText] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
-  const [isCodeVerified, setIsCodeVerified] = useState('');
-  const [registrationMode, setRegistrationMode] = useState('sendCode'); // Modo de registro: enviar código o verificar código
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
+  const [registrationMode, setRegistrationMode] = useState('sendCode');
 
   useEffect(() => {
     requestMediaLibraryPermission();
@@ -45,18 +46,17 @@ const RegisterScreen = () => {
         body: JSON.stringify({ email }),
       });
       const data = await response.json();
-      console.log(data);
       setGeneratedCode(data.code);
       Alert.alert('Código enviado', 'Se ha enviado un código de verificación a tu correo electrónico.');
-      setRegistrationMode('verifyCode'); // Cambiar al modo de verificación de código después de enviar el código
+      setRegistrationMode('verifyCode');
     } catch (error) {
-      console.error('Error al enviar el código:', error);
       Alert.alert('Error', 'Ocurrió un error al enviar el código. Por favor, inténtalo de nuevo.');
     }
   };
 
   const verifyCode = async () => {
     try {
+      console.log('Verification Code:', verificationCode);
       const response = await fetch('http://192.168.1.90:3000/usuarios/verify-code', {
         method: 'POST',
         headers: {
@@ -64,18 +64,21 @@ const RegisterScreen = () => {
         },
         body: JSON.stringify({ email, code: verificationCode }),
       });
-      const isValid = await response.json();
-      console.log(isValid);
-      if (isValid) {
-        setIsCodeVerified('true');
-        console.log(isCodeVerified);
-        Alert.alert('Código verificado', 'El código de verificación es correcto.');
-        handleRegister(); // Ejecutar registro si el código es correcto
-        navigation.navigate('Main');
+
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+
+      const responseData = await response.json();
+      console.log('Response Data:', responseData); // Verifica la estructura de la respuesta
+
+      if (responseData.isValid) {
+        console.log('Código verificado correctamente');
+        setIsCodeVerified(true);
       } else {
-        setIsCodeVerified('false');
+        console.log('Código incorrecto');
+        setIsCodeVerified(false);
         Alert.alert('Código incorrecto', 'El código de verificación no es correcto.');
-        setRegistrationMode('sendCode');
       }
     } catch (error) {
       console.error('Error al verificar el código:', error);
@@ -83,55 +86,58 @@ const RegisterScreen = () => {
     }
   };
 
+  useEffect(() => {
+    if (isCodeVerified) {
+      handleRegister();
+    }
+  }, [isCodeVerified]);
+
   const handleRegister = async () => {
-    console.log(isCodeVerified);
-    if (isCodeVerified == 'false') {
+    console.log('isCodeVerified:', isCodeVerified);
+    if (!isCodeVerified) {
       Alert.alert('Código no verificado', 'Debes verificar tu correo electrónico antes de registrarte.');
-      console.log("no verificado");
       return;
-    } else {
-      console.log(name, email, password, plan, description, image);
-      try {
-        if (!name || !email || !password || !description) {
-          setErrorText('No se pueden dejar campos vacíos excepto la imagen');
-          return;
-        }
+    }
 
-        if (!email.includes('@')) {
-          setErrorText('Correo inválido, por favor, compruébelo');
-          return;
-        }
-
-        setErrorText('');
-
-        const userData = {
-          nome: name,
-          email: email,
-          password: password,
-          plan: plan,
-          descripcionPersonal: description,
-          image: image,
-          urlImagen: image,
-        };
-        console.log(userData);
-        console.log(userData.image);
-        const response = await fetch('http://192.168.1.90:3000/usuarios', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al registrar el usuario');
-        }
-
-        navigation.navigate('Main');
-      } catch (error) {
-        console.error('Error al registrar usuario:', error);
-        Alert.alert('Error', 'Ocurrió un error al registrar el usuario. Por favor, inténtalo de nuevo.');
+    try {
+      if (!name || !email || !password || !description) {
+        setErrorText('No se pueden dejar campos vacíos excepto la imagen');
+        return;
       }
+
+      if (!email.includes('@')) {
+        setErrorText('Correo inválido, por favor, compruébelo');
+        return;
+      }
+
+      setErrorText('');
+
+      const userData = {
+        nome: name,
+        email: email,
+        password: password,
+        plan: 'Básico',
+        descripcionPersonal: description,
+        image: image,
+        urlImagen: image,
+      };
+
+      const response = await fetch('http://192.168.1.90:3000/usuarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al registrar el usuario');
+      }
+
+      Alert.alert('Usuario registrado', 'Usuario registrado correctamente. Por favor, inicia sesión para continuar.');
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Error', 'Ocurrió un error al registrar el usuario. Por favor, inténtalo de nuevo.');
     }
   };
 
@@ -160,9 +166,7 @@ const RegisterScreen = () => {
       const blob = await response.blob();
       const storageRef = ref(storage, `profileImages/${new Date().toISOString()}`);
       const snapshot = await uploadBytes(storageRef, blob);
-      console.log('Imagen subida con éxito');
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('URL de la imagen:', downloadURL);
       setImage(downloadURL);
     } catch (error) {
       console.error('Error al subir la imagen:', error);
@@ -171,18 +175,36 @@ const RegisterScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Registro</Text>
-      {registrationMode === 'sendCode' && (
-        <>
-          <View style={styles.inputContainer}>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Registrarte en <Text style={styles.titleBold}>Party Wars</Text></Text>
+      </View>
+      <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <View style={styles.profileIcon}>
+            <Text style={styles.iconText}>+</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        style={styles.bottomSection}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {registrationMode === 'sendCode' && (
+          <>
             <TextInput
               placeholder="Nombre"
+              placeholderTextColor="#ffffff"
               value={name}
               onChangeText={setName}
               style={styles.input}
             />
             <TextInput
               placeholder="Correo electrónico"
+              placeholderTextColor="#ffffff"
               value={email}
               onChangeText={setEmail}
               style={styles.input}
@@ -190,47 +212,58 @@ const RegisterScreen = () => {
             {errorText && <Text style={styles.errorText}>{errorText}</Text>}
             <TextInput
               placeholder="Contraseña"
+              placeholderTextColor="#ffffff"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
             />
             <TextInput
-              placeholder="Plan"
-              value={plan}
-              onChangeText={setPlan}
-              style={styles.input}
-            />
-            <TextInput
               placeholder="Descripción personal"
+              placeholderTextColor="#ffffff"
               value={description}
               onChangeText={setDescription}
               style={styles.input}
             />
-          </View>
-          <Button title="Seleccionar Imagen" onPress={pickImage} />
-          {!imageSelected && <Text style={styles.text}>Si no quieres seleccionar una imagen ahora, podrás elegir una imagen en la configuración de perfil del usuario</Text>}
-          {imageSelected && <Text style={styles.text}>Imagen seleccionada</Text>}
-          {image && <Image source={{ uri: image }} style={styles.image} />}
-          <Button title="Registrarse" onPress={sendVerificationCode} />
-        </>
-      )}
-      {registrationMode === 'verifyCode' && (
-        <>
-          <TextInput
-            placeholder="Código de Verificación"
-            value={verificationCode}
-            onChangeText={setVerificationCode}
-            style={styles.input}
-          />
-          <Button title="Verificar Código" onPress={verifyCode} />
-        </>
-      )}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={goToLogin}>
-          <Text style={styles.link}>¿Ya tienes una cuenta? <Text style={styles.blueText}>Pincha aquí</Text></Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity style={styles.buttonContainer} onPress={sendVerificationCode}>
+              <LinearGradient
+                colors={['#313131', '#313131']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Registrarse</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.ViewToLogin}>
+              <TouchableOpacity onPress={goToLogin}>
+                <Text style={styles.link}>¿Ya tienes una cuenta? <Text style={styles.blueText}>Pincha aquí</Text></Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+        {registrationMode === 'verifyCode' && (
+          <>
+            <TextInput
+              placeholder="Código de Verificación"
+              placeholderTextColor="#ffffff"
+              value={verificationCode}
+              onChangeText={setVerificationCode}
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.buttonContainer} onPress={verifyCode}>
+              <LinearGradient
+                colors={['#313131', '#313131']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Verificar Código</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </>
+        )}
+      </LinearGradient>
     </View>
   );
 };
@@ -240,47 +273,106 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    textAlign: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: '#313131',
   },
-  heading: {
-    fontSize: 22,
-    marginBottom: 20,
-  },
-  inputContainer: {
+  topSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#313131',
     width: '100%',
+    paddingVertical: 5,
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: '18%',
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    bottom: '65%',
+  },
+  bottomSection: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flex: 2.2,
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 140,
+    paddingBottom: 60,
+  },
+  title: {
+    fontSize: 30,
+    color: '#ffffff',
     marginBottom: 20,
+    bottom: -10,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    padding: 10,
-    marginBottom: 10,
-  },
-  text: {
-    marginTop: 10,
-    color: 'blue',
+  titleBold: {
+    fontWeight: 'bold',
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
+    borderColor: '#ffffff',
+    borderWidth: 2,
+    marginVertical: 10,
+    borderRadius: 15,
+  },
+  profileIcon: {
+    width: 150,
+    height: 150,
+    backgroundColor: 'lightgray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 75,
     marginVertical: 10,
   },
+  iconText: {
+    fontSize: 50,
+    color: 'gray',
+  },
+  input: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 10,
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    bottom: 30,
+  },
   buttonContainer: {
-    width: '100%',
+    width: '80%',
+    borderRadius: 10,
     marginTop: 20,
   },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    bottom: 30,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  ViewToLogin: {
+    bottom: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   link: {
-    marginTop: 10,
-    textAlign: 'center',
+    color: '#000000',
+    marginTop: 15,
   },
   blueText: {
-    color: 'blue',
+    color: '#00ADEF',
   },
   errorText: {
     color: 'red',
-  }
+    marginBottom: 10,
+  },
 });
 
 export default RegisterScreen;
-

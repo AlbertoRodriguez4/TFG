@@ -76,6 +76,7 @@ export class SalaController {
   }
   @Get('tematica/:tematica')
   async findByTematica(@Param('tematica') tematica: string) {
+    console.log(tematica);
     return await this.salaService.findByTematica(tematica);
   }
   @Get('nombre/:nombre')

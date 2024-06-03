@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 
 const IniciarJuegos = ({ route }) => {
   const { salaId } = route.params;
@@ -62,41 +64,83 @@ const IniciarJuegos = ({ route }) => {
     }
   }, [juegoIndex, juegos]);
 
+  const GradientText = ({ text, style }) => (
+    <MaskedView
+      style={{ flex: 1 }}
+      maskElement={
+        <View style={{ backgroundColor: 'transparent' }}>
+          <Text style={[style, { backgroundColor: 'transparent' }]}>{text}</Text>
+        </View>
+      }
+    >
+      <LinearGradient
+        colors={['#FFDE59','#FF914D']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <Text style={[style, { opacity: 0 }]}>{text}</Text>
+      </LinearGradient>
+    </MaskedView>
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Juego: {juegos[juegoIndex] ? juegos[juegoIndex].nombre : ""}</Text>
-      {preguntas.length > 0 ? (
-        <View>
-          <Text style={styles.subtitle}>Preguntas:</Text>
-          <View style={styles.preguntaContainer}>
-            <Text style={styles.preguntaTexto}>{preguntas[preguntaIndex].pregunta}</Text>
-            <TouchableOpacity style={styles.button} onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1}>
-              <Text style={styles.buttonText}>Avanzar</Text>
-            </TouchableOpacity>
-          </View>
-          {preguntaIndex >= preguntas.length - 1 && (
-            <View style={styles.avanzarContainer}>
-              <Text style={styles.avanzarTexto}>El juego ya ha acabado, ¿Quiere pasar al siguiente juego?</Text>
-              <TouchableOpacity style={styles.button} onPress={siguienteJuego}>
-                <Text style={styles.buttonText}>{juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.topSection}>
+          <Text style={styles.title}>Party <Text style={styles.titleBold}>Wars</Text></Text>
         </View>
-      ) : (
-        <View>
-          <Text style={styles.subtitle}>Descripción:</Text>
-          <Text style={styles.descripcionTexto}>{juegos[juegoIndex] ? juegos[juegoIndex].descripcionJuego : "Cargando descripción..."}</Text>
-          <Text style={styles.subtitle}>Normas:</Text>
-          <Text style={styles.descripcionTexto}>{juegos[juegoIndex] ? juegos[juegoIndex].normasJuego : "Cargando normas..."}</Text>
-          <View style={styles.avanzarContainer}>
-            <Text style={styles.avanzarTexto}>El juego no tiene preguntas, ¿Quiere pasar al siguiente juego?</Text>
-            <TouchableOpacity style={styles.button} onPress={siguienteJuego}>
-              <Text style={styles.buttonText}>{juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"}</Text>
-            </TouchableOpacity>
+
+        <LinearGradient
+          colors={['#7cfff7', '#ff88e5']}
+          style={styles.bottomSection}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Image source={require('../assets/mono-premium.jpeg')} style={styles.backgroundImage} />
+
+          <View style={styles.contentContainer}>
+            <GradientText text={`${juegos[juegoIndex] ? juegos[juegoIndex].nombre : ""}`} style={styles.gameTitle} />
+            {preguntas.length > 0 ? (
+              <View>
+                <View style={styles.preguntaContainer}>
+                  <Text style={styles.preguntaTexto}>{preguntas[preguntaIndex].pregunta}</Text>
+                  <TouchableOpacity style={styles.buttonContainer} onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1}>
+                    <LinearGradient colors={['#FFDE59', '#FF914D']} style={styles.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                      <Text style={styles.buttonText}>Avanzar</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+                {preguntaIndex >= preguntas.length - 1 && (
+                  <View style={styles.avanzarContainer}>
+                    <Text style={styles.avanzarTexto}>El juego ya ha acabado, ¿Quiere pasar al siguiente juego?</Text>
+                    <TouchableOpacity style={styles.buttonContainer} onPress={siguienteJuego}>
+                      <LinearGradient colors={['#313131', '#313131']} style={styles.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.buttonText}>{juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"}</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View>
+                <GradientText text="Descripción:" style={styles.subtitle} />
+                <Text style={styles.descripcionTexto}>{juegos[juegoIndex] ? juegos[juegoIndex].descripcionJuego : "Cargando descripción..."}</Text>
+                <GradientText text="Normas:" style={styles.subtitle} />
+                <Text style={styles.descripcionTexto}>{juegos[juegoIndex] ? juegos[juegoIndex].normasJuego : "Cargando normas..."}</Text>
+                <View style={styles.avanzarContainer}>
+                  <Text style={styles.avanzarTexto}>El juego no tiene preguntas, ¿Quiere pasar al siguiente juego?</Text>
+                  <TouchableOpacity style={styles.buttonContainer} onPress={siguienteJuego}>
+                    <LinearGradient colors={['#313131', '#313131']} style={styles.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                      <Text style={styles.buttonText}>{juegoIndex < juegos.length - 1 ? "Siguiente juego" : "Terminar Party Wars"}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
-        </View>
-      )}
+        </LinearGradient>
+      </ScrollView>
     </View>
   );
 };
@@ -104,30 +148,90 @@ const IniciarJuegos = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#313131',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topSection: {
+    flex: 1,
+    top: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 50, 
+  },
+  bottomSection: {
+    flex: 7,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    width: '100%',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.4,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 30,
+    color: '#ffffff',
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#FFD700',
   },
-  subtitle: {
-    fontSize: 22,
+  titleBold: {
+    fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#FFD700',
   },
+  contentContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    width: '90%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 100,
+    marginTop: 80,
+  },
+  textMask: {
+    backgroundColor: 'transparent',
+  },
+  transparentText: {
+    backgroundColor: 'transparent',
+  },
+  hiddenText: {
+    opacity: 0,
+  },
+  gradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  gameTitle: {
+    top: 65,
+    fontSize: 50,
+    fontFamily: 'serif',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
   preguntaContainer: {
     marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 20,
     borderWidth: 1,
     borderColor: '#FFD700',
     borderRadius: 10,
-    backgroundColor: '#333333',
+    backgroundColor: '#313131',
+    bottom: 100,
   },
   preguntaTexto: {
     fontSize: 18,
@@ -150,17 +254,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#FFFFFF',
   },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 10,
+  },
   button: {
-    backgroundColor: '#FFD700',
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 10,
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
   },
   buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
     fontSize: 18,
-    color: '#1e1e1e',
-    textAlign: 'center',
   },
 });
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -23,7 +24,6 @@ const LoginScreen = () => {
         setLoggedInUser(JSON.parse(user).nome);
       }
     } catch (error) {
-      console.error('Error al verificar la sesión:', error);
     }
   };
 
@@ -34,7 +34,7 @@ const LoginScreen = () => {
 
       if (userData.id) {
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
-        setLoggedInUser(userData.nome); // Actualiza el estado loggedInUser con el nombre del usuario
+        setLoggedInUser(userData.nome);
         Alert.alert('Inicio de Sesión Exitoso', `Hola, ${userData.nome}`);
         navigation.navigate('Main', { id: userData.id });
       } else {
@@ -42,7 +42,6 @@ const LoginScreen = () => {
         throw new Error('Correo electrónico o contraseña incorrectos');
       }
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
       setLoginError(true);
     }
   };
@@ -65,28 +64,58 @@ const LoginScreen = () => {
       {loggedInUser ? (
         <>
           <Text style={styles.welcomeText}>Bienvenido, {loggedInUser}</Text>
-          <Button title="Cerrar Sesión" onPress={handleLogout} />
-        </>
+
+
+
+          <TouchableOpacity style={styles.buttonContainer} onPress={handleLogout}>
+              <LinearGradient
+                colors={['#FFDE59', '#FF914D']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>CERRAR SESIÓN</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+                  </>
       ) : (
         <>
-          <Image source={require('../assets/perfil.png')}
-            style={styles.logo} />
-          <View style={styles.inputContainer}>
+          <View style={styles.topSection}>
+            <Text style={styles.title}>Iniciar <Text style={styles.titleBold}>Sesión</Text></Text>
+          </View>
+          <TouchableOpacity style={styles.imageContainer}>
+            <Image source={require('../assets/logopw.png')} style={styles.image} />
+          </TouchableOpacity>
+          <LinearGradient
+            colors={['#FFDE59', '#FF914D']}
+            style={styles.bottomSection}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
             <TextInput
-              placeholder="Nombre de Usuario"
+              placeholder="Correo Electrónico"
+              placeholderTextColor="#ffffff"
               value={email}
               onChangeText={setEmail}
               style={styles.input}
             />
             <TextInput
               placeholder="Contraseña"
+              placeholderTextColor="#ffffff"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
             />
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Entrar</Text>
+            <TouchableOpacity style={styles.buttonContainer} onPress={handleLogin}>
+              <LinearGradient
+                colors={['#313131', '#313131']}
+                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Entrar</Text>
+              </LinearGradient>
             </TouchableOpacity>
             {loginError && (
               <Text style={styles.errorText}>El correo o la contraseña es incorrecto, inténtelo de nuevo</Text>
@@ -97,7 +126,7 @@ const LoginScreen = () => {
                 Crear cuenta
               </Text>
             </Text>
-          </View>
+          </LinearGradient>
         </>
       )}
     </View>
@@ -109,36 +138,75 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff', // Cambia esto según el fondo deseado
+    backgroundColor: '#313131',
   },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
-  },
-  inputContainer: {
-    width: '80%',
+  topSection: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#313131',
+    width: '100%',
+    paddingVertical: 20,
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: '18%',
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  bottomSection: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flex: 2.2,
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  title: {
+    fontSize: 30,
+    color: '#ffffff',
+    marginBottom: 20,
+    bottom: 25,
+  },
+  titleBold: {
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
+  image: {
+    width: 150,
+    height: 150,
+    borderColor: '#ffffff',
+    borderWidth: 2,
+    marginVertical: 10,
+    borderRadius: 15,
   },
   input: {
+    width: '80%',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#ffffff',
     padding: 10,
+    borderRadius: 10,
     marginVertical: 10,
-    width: '100%',
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    bottom: 30,
+  },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 20,
   },
   button: {
-    backgroundColor: '#FFA500', // Color naranja
-    borderRadius: 5,
-    padding: 10,
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-    width: '100%',
-    marginVertical: 10,
+    bottom: 30,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   errorText: {
     color: 'red',
@@ -146,6 +214,7 @@ const styles = StyleSheet.create({
   },
   registerText: {
     marginVertical: 10,
+    bottom: 20,
   },
   registerLink: {
     color: 'blue',
@@ -153,6 +222,9 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 20,
+    bottom: 25,
   },
 });
 
