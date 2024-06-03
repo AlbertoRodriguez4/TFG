@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { useFocusEffect } from '@react-navigation/native';
 const VeDatosSalas = ({ route, navigation }) => {
   const [juegos, setJuegos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -15,7 +15,6 @@ const VeDatosSalas = ({ route, navigation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await loadUserData();
 
         const { salaId: idFromParams } = route.params;
         setSalaId(idFromParams);
@@ -35,7 +34,7 @@ const VeDatosSalas = ({ route, navigation }) => {
         setEspaciosDisponibles(numeroParticipantes - usuariosData.length);
 
         const userEmail = await AsyncStorage.getItem('id');
-        console.log(usuarioId);
+        console.log("id del usuario" + 	usuarioId);
         const isUserInRoom = usuariosData.some(user => user.id === usuarioId);
         setIsUserInRoom(isUserInRoom);
 
@@ -48,6 +47,11 @@ const VeDatosSalas = ({ route, navigation }) => {
     fetchData();
   }, [route.params]);
 
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+    }, [])
+  );
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('userData');

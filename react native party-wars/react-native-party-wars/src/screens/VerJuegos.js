@@ -14,8 +14,13 @@ const ViewGamesScreen = ({ route }) => {
   const [usuarioId, setUsuarioId] = useState(null);
 
   const images = [
-    require('../assets/mono-business.jpg'),
-    require('../assets/mono-premium.jpeg'),
+    require('../assets/MonoArray1.jpg'),
+    require('../assets/MonoArray2.jpg'),
+    require('../assets/MonoArray3.jpg'),
+    require('../assets/MonoArray4.jpg'),
+    require('../assets/MonoArray5.jpg'),
+    require('../assets/MonoArray6.jpg'),
+
     // Agrega más imágenes según sea necesario
   ];
 

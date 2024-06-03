@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, RefreshControl, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { useFocusEffect } from '@react-navigation/native';
 const Main = () => {
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
@@ -19,13 +19,16 @@ const Main = () => {
   useEffect(() => {
     fetchSalas();
     fetchEventos();
-    loadUserData();
   }, []);
 
   useEffect(() => {
     filterItems();
   }, [salas, eventos, searchQuery, selectedTematica]);
-
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+    }, [])
+  );
   const fetchSalas = async () => {
     try {
       const response = await fetch('http://192.168.1.90:3000/salas');

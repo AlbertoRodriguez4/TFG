@@ -45,7 +45,6 @@ const CreateGameScreen = () => {
           descripcionJuego,
           categoriaJuego,
           normasJuego,
-          fechaJuego,
         }),
       });
 
@@ -60,7 +59,6 @@ const CreateGameScreen = () => {
       setDescripcionJuego('');
       setCategoriaJuego('');
       setNormasJuego('');
-      setFechaJuego(new Date());
       navigation.navigate('VerJuegos', { idNavigationJuegos: idNavigationJuegos });
     } catch (error) {
       console.error('Error al crear el juego:', error);
@@ -124,19 +122,6 @@ const CreateGameScreen = () => {
             onChangeText={setCategoriaJuego}
             style={styles.input}
           />
-          <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.dateInput}>
-            <Text style={styles.dateText}>{fechaJuego.toLocaleString()}</Text>
-          </TouchableOpacity>
-          {showPicker && (
-            <DateTimePicker
-              testID="dateTimePicker"
-              value={fechaJuego}
-              mode="datetime"
-              is24Hour={true}
-              display="default"
-              onChange={onChangeFecha}
-            />
-          )}
           <TouchableOpacity style={styles.buttonContainer} onPress={handleCreateGame}>
             <LinearGradient
               colors={['#313131', '#313131']}
