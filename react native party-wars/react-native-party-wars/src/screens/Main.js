@@ -154,7 +154,7 @@ const Main = () => {
 
   const renderEventoCard = (item) => (
     <View style={styles.bottomSection}>
-      <LinearGradient
+      <LinearGradient 
         colors={['#7cfff7', '#ff88e5']}
         style={styles.card}
         start={{ x: 0, y: 0 }}
@@ -166,14 +166,14 @@ const Main = () => {
           </View>
           <Text style={styles.cardTitle}>{item.nombreSala}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('verDatosEventos', { eventoId: item.id })} style={styles.button}>
-            <LinearGradient
-              colors={['#FFDE59', '#FF914D']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.buttonGradient}
-            >
-              <Text style={styles.buttonText}>Ver Detalles</Text>
-            </LinearGradient>
+              <LinearGradient
+                colors={['#FFDE59', '#FF914D']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                <Text style={styles.buttonText}>Ver Detalles</Text>
+              </LinearGradient>
           </TouchableOpacity>
         </TouchableOpacity>
       </LinearGradient>

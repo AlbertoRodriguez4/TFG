@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image, ScrollView, TextInput, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-const VeDatosSalas = ({ route, navigation }) => {
+import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+
+const VeDatosSalas = ({ route }) => {
+  const navigation = useNavigation();
   const [juegos, setJuegos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [userData, setUserData] = useState(null);
@@ -11,10 +14,12 @@ const VeDatosSalas = ({ route, navigation }) => {
   const [salaId, setSalaId] = useState(null);
   const [datosSala, setDatosSala] = useState(null);
   const [usuarioId, setUsuarioId] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        await loadUserData();
 
         const { salaId: idFromParams } = route.params;
         setSalaId(idFromParams);
@@ -34,24 +39,19 @@ const VeDatosSalas = ({ route, navigation }) => {
         setEspaciosDisponibles(numeroParticipantes - usuariosData.length);
 
         const userEmail = await AsyncStorage.getItem('id');
-        console.log("id del usuario" + 	usuarioId);
+
         const isUserInRoom = usuariosData.some(user => user.id === usuarioId);
         setIsUserInRoom(isUserInRoom);
 
         setUsuarios(usuariosData);
       } catch (error) {
-        console.error('Error al cargar los datos de la sala:', error);
+
       }
     };
 
     fetchData();
   }, [route.params]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadUserData();
-    }, [])
-  );
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('userData');
@@ -61,7 +61,7 @@ const VeDatosSalas = ({ route, navigation }) => {
         setUsuarioId(id);
       }
     } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error);
+
     }
   };
 
@@ -82,19 +82,50 @@ const VeDatosSalas = ({ route, navigation }) => {
         throw new Error('Error al unirse a la fiesta');
       }
     } catch (error) {
-      console.error('Error al unirse a la fiesta:', error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    const fetchData = async () => {
+      try {
+        const juegosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos`);
+        const juegosData = await juegosResponse.json();
+        setJuegos(juegosData);
+
+        const usuariosResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios`);
+        const usuariosData = await usuariosResponse.json();
+
+        const datosSalasResponse = await fetch(`http://192.168.1.90:3000/salas/${salaId}`);
+        const datosSalaData = await datosSalasResponse.json();
+
+        setDatosSala(datosSalaData);
+        const numeroParticipantes = datosSalaData.numeroParticipantes;
+        setEspaciosDisponibles(numeroParticipantes - usuariosData.length);
+
+        const userEmail = await AsyncStorage.getItem('id');
+
+        const isUserInRoom = usuariosData.some(user => user.id === usuarioId);
+        setIsUserInRoom(isUserInRoom);
+
+        setUsuarios(usuariosData);
+      } catch (error) {
+
+      }
+    };
+    fetchData();
+    setRefreshing(false);
   };
 
   const renderHeader = () => (
     <View>
-      <View style={styles.header}>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Detalles de la Sala</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={require('../assets/izquierda.png')} style={styles.icon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Sala de Party Wars</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Image source={require('../assets/hogar.png')} style={styles.icon} />
+          <Image
+            source={require('../assets/perfil.png')}
+            style={styles.profileIcon}
+          />
         </TouchableOpacity>
       </View>
 
@@ -133,9 +164,28 @@ const VeDatosSalas = ({ route, navigation }) => {
           style={styles.joinButton}
           onPress={handleJoinParty}
         >
-          <Text style={styles.joinButtonText}>Unirse a la fiesta</Text>
+          <LinearGradient
+            colors={['#FFDE59', '#FF914D']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.joinButtonGradient}
+          >
+            <Text style={styles.joinButtonText}>Unirse a la fiesta</Text>
+          </LinearGradient>
         </TouchableOpacity>
       )}
+    </View>
+  );
+
+  const renderGameCard = ({ item }) => (
+    <View style={styles.gameCard}>
+      <View style={styles.gameHeader}>
+        <Text style={styles.gameTitle}>{item.nombre}</Text>
+        <Text style={styles.gameCategory}>{item.categoriaJuego}</Text>
+      </View>
+      <Text style={styles.gameProperty}>{item.propiedadJuego}</Text>
+      <Text style={styles.gameDescription}>{item.descripcionJuego}</Text>
+      <Text style={styles.gameRules}>{item.normasJuego}</Text>
     </View>
   );
 
@@ -145,51 +195,39 @@ const VeDatosSalas = ({ route, navigation }) => {
       keyExtractor={(item, index) => index.toString()}
       ListHeaderComponent={renderHeader}
       ListFooterComponent={renderFooter}
-      renderItem={({ item }) => (
-        <View style={styles.gameCard}>
-          <View style={styles.gameHeader}>
-            <Text style={styles.gameTitle}>{item.nombre}</Text>
-            <Text style={styles.gameCategory}>{item.categoriaJuego}</Text>
-          </View>
-          <Text style={styles.gameProperty}>{item.propiedadJuego}</Text>
-          <Text style={styles.gameDescription}>{item.descripcionJuego}</Text>
-          <Text style={styles.gameRules}>{item.normasJuego}</Text>
-        </View>
-      )}
+      renderItem={renderGameCard}
       contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
     />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#FFFAF4',
+  },
+  topSection: {
+    backgroundColor: '#313131',
     width: '100%',
-    height: '100%',
-    backgroundColor: '#f9f9f9',
-  },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#000',
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    tintColor: '#fff',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    paddingVertical: 20,
   },
   mainImage: {
     width: '100%',
     height: 200,
     resizeMode: 'cover',
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    marginTop: 10,
+    color: 'white',
+    textAlign: 'center',
   },
   subTitle: {
     fontSize: 18,
@@ -219,53 +257,59 @@ const styles = StyleSheet.create({
   },
   gameCard: {
     backgroundColor: '#fff',
-    padding: 15,
+    marginHorizontal: 20,
+    marginVertical: 10,
+    padding: 10,
     borderRadius: 10,
-    marginBottom: 10,
-    marginHorizontal: 10,
-    elevation: 0,
+    elevation: 3,
   },
   gameHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   gameTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  gameCategory: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    color: '#555',
-  },
-  gameProperty: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginVertical: 5,
-  },
-  gameDescription: {
-    fontSize: 14,
-    marginVertical: 5,
-  },
-  gameRules: {
-    fontSize: 12,
-    color: '#888',
-  },
-  joinButton: {
-    backgroundColor: '#FFA726',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginVertical: 10,
-    marginHorizontal: 20,
-  },
-  joinButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  gameCategory: {
+    fontSize: 16,
+    color: '#666',
+  },
+  gameProperty: {
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+  gameDescription: {
+    marginTop: 10,
+  },
+  gameRules: {
+    marginTop: 10,
+    color: '#555',
+  },
+  joinButton: {
+    marginHorizontal: 20,
+    marginVertical: 10,
+  },
+  joinButtonGradient: {
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  joinButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   contentContainer: {
-    paddingBottom: 100,
+    paddingBottom: 20,
+  },
+  profileIcon: {
+    width: 70,
+    height: 70,
+    position: 'absolute',
+    bottom: -20,
+    right: 0,
   },
 });
 

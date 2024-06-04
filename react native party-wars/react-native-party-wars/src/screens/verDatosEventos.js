@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Button, Image, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Button, Image, TouchableOpacity, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const VeDatosSalas = ({ route, navigation }) => {
   const [evento, setEvento] = useState(null);
@@ -19,7 +20,6 @@ const VeDatosSalas = ({ route, navigation }) => {
 
         const { eventoId: idFromParams } = route.params; // Obtener el ID del evento del parámetro de ruta
         setEventoId(idFromParams); // Guardar el eventoId en la variable de estado
-        console.log(idFromParams);
 
         // Obtener datos del evento
         const eventosResponse = await fetch(`http://192.168.1.90:3000/eventos/${idFromParams}`);
@@ -38,7 +38,6 @@ const VeDatosSalas = ({ route, navigation }) => {
         }
 
         const userIds = usuariosData.map(user => user.id);
-        console.log("Cantidad de usuarios: " + usuariosData.length);
 
         // Calcular la cantidad de espacios disponibles restando la cantidad de usuarios actuales del límite máximo de asistentes
         const espaciosDisponibles = eventosData.cantidadAsistentes - usuariosData.length;
@@ -62,7 +61,6 @@ const VeDatosSalas = ({ route, navigation }) => {
           }
         }
       } catch (error) {
-        console.error('Error al cargar los datos del evento:', error.message);
       }
     };
 
@@ -76,7 +74,6 @@ const VeDatosSalas = ({ route, navigation }) => {
         setUserData(JSON.parse(storedUserData));
       }
     } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error.message);
     }
   };
 
@@ -93,64 +90,82 @@ const VeDatosSalas = ({ route, navigation }) => {
         throw new Error('Error al unirse al evento');
       }
     } catch (error) {
-      console.error('Error al unirse al evento:', error.message);
     }
     navigation.navigate("CompraDeEntradas", { eventoId: eventoId });
   };
 
   return (
     <View style={styles.container}>
-      {/* Sección de eventos */}
-      {evento && (
-        <>
-          <Text style={styles.sectionTitle}>Detalles del Evento</Text>
-          <FlatList
-            data={[evento]}
-            renderItem={({ item }) => (
-              <View style={styles.item}>
-                <Text>Nombre de la Sala: {item.nombreSala || 'Nombre no disponible'}</Text>
-                <Text>Edad Mínima del Evento: {item.edadMinEvento}</Text>
-                <Text>Edad Máxima del Evento: {item.edadMaxEvento}</Text>
-                <Text>Localización: {item.localizacion}</Text>
-                <Text>Temática del Evento: {item.tematicaEvento}</Text>
-                <Text>Descripción del Evento: {item.descripcionEnvento}</Text>
-                <Text>Localización del Evento: {item.localizacionEvento}</Text>
-                <Text>Cantidad de Asistentes: {item.cantidadAsistentes}</Text>
-                <Text>Fecha del Evento: {item.fechaEvento}</Text>
-                <Text>Nombre de la Empresa Organizadora: {item.nombreEmpEvento}</Text>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-          />
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoTitle}>Links de referencia:</Text>
-            <Text style={styles.infoText}>{evento.linksDeReferencia || 'No disponible'}</Text>
-            <Text style={styles.infoTitle}>Espacios disponibles:</Text>
-            <Text style={styles.infoText}>{espaciosDisponibles}</Text>
-          </View>
-        </>
-      )}
-
-      {/* Sección de usuarios */}
-      <Text style={styles.sectionTitle}>Usuarios</Text>
-      <FlatList
-        data={usuarios}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-              <Image source={{ uri: item.urlImagen }} style={styles.image} />
-            <Text>Nombre: {item.nome}</Text>
-            <Text>Email: {item.email}</Text>
-            <Text>Plan: {item.plan}</Text>
-            <Text>Descripción Personal: {item.descripcionPersonal}</Text>
-          </View>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Detalles del <Text style={styles.titleBold}>Evento</Text></Text>
+      </View>
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        style={styles.bottomSection}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Sección de eventos */}
+        {evento && (
+          <>
+            <Text style={styles.sectionTitle}>Detalles del Evento</Text>
+            <FlatList
+              data={[evento]}
+              renderItem={({ item }) => (
+                <View style={styles.item}>
+                  <Text style={styles.textBold}>Nombre de la Sala: {item.nombreSala || 'Nombre no disponible'}</Text>
+                  <Text style={styles.textBold}>Edad Mínima del Evento: {item.edadMinEvento}</Text>
+                  <Text style={styles.textBold}>Edad Máxima del Evento: {item.edadMaxEvento}</Text>
+                  <Text style={styles.textBold}>Localización: {item.localizacion}</Text>
+                  <Text style={styles.textBold}>Temática del Evento: {item.tematicaEvento}</Text>
+                  <Text style={styles.textBold}>Descripción del Evento: {item.descripcionEnvento}</Text>
+                  <Text style={styles.textBold}>Localización del Evento: {item.localizacionEvento}</Text>
+                  <Text style={styles.textBold}>Cantidad de Asistentes: {item.cantidadAsistentes}</Text>
+                  <Text style={styles.textBold}>Fecha del Evento: {item.fechaEvento}</Text>
+                  <Text style={styles.textBold}>Nombre de la Empresa Organizadora: {item.nombreEmpEvento}</Text>
+                </View>
+              )}
+              keyExtractor={(item, index) => index.toString()}
+            />
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoTitle}>Links de referencia:</Text>
+              <Text style={styles.infoText}>{evento.linksDeReferencia || 'No disponible'}</Text>
+              <Text style={styles.infoTitle}>Espacios disponibles:</Text>
+              <Text style={styles.infoText}>{espaciosDisponibles}</Text>
+            </View>
+          </>
         )}
-        keyExtractor={(item, index) => index.toString()}
-      />
 
-      {/* Mostrar el botón solo si el usuario no está en el evento y si hay datos del usuario */}
-      {valor === 0 && userData && (
-        <Button title="Unirse al evento" onPress={handleJoinEvent} />
-      )}
+        {/* Sección de usuarios */}
+        <Text style={styles.sectionTitle}>Usuarios</Text>
+        <FlatList
+          data={usuarios}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+                <Image source={{ uri: item.urlImagen }} style={styles.image} />
+              <Text style={styles.textBold}>Nombre: {item.nome}</Text>
+              <Text style={styles.textBold}>Email: {item.email}</Text>
+              <Text style={styles.textBold}>Plan: {item.plan}</Text>
+              <Text style={styles.textBold}>Descripción Personal: {item.descripcionPersonal}</Text>
+            </View>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+
+        {/* Mostrar el botón solo si el usuario no está en el evento y si hay datos del usuario */}
+        {valor === 0 && userData && (
+          <TouchableOpacity style={styles.buttonContainer} onPress={handleJoinEvent}>
+            <LinearGradient
+              colors={['#313131', '#313131']}
+              style={styles.button}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.buttonText}>Unirse al evento</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+      </LinearGradient>
     </View>
   );
 };
@@ -158,33 +173,66 @@ const VeDatosSalas = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#313131',
+  },
+  textBold: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  
+  topSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#313131',
+    width: '100%',
+  },
+  bottomSection: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flex: 5,
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 10,
+  },
+  title: {
+    fontSize: 30,
+    color: '#ffffff',
+    marginBottom: 0,
+  },
+  titleBold: {
+    fontSize: 30,
+    fontWeight: 'bold',
   },
   item: {
-    backgroundColor: '#f9f9f9',
     padding: 10,
     marginBottom: 10,
-    borderRadius:  5,
+    borderRadius: 5,
+    width: '90%',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
+    color: '#ffffff',
   },
   infoContainer: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#e9e9e9',
+    backgroundColor: '#313131',
     borderRadius: 5,
+    width: '90%',
   },
   infoTitle: {
+    color: '#ffffff',
+
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   infoText: {
+    color: '#ffffff',
     fontSize: 14,
     marginBottom: 10,
   },
@@ -194,7 +242,20 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 10,
   },
+  buttonContainer: {
+    width: '80%',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
 });
 
 export default VeDatosSalas;
-
