@@ -102,15 +102,13 @@ const IniciarJuegos = ({ route }) => {
           <View style={styles.contentContainer}>
             <GradientText text={`${juegos[juegoIndex] ? juegos[juegoIndex].nombre : ""}`} style={styles.gameTitle} />
             {preguntas.length > 0 ? (
-              <View>
-                <View style={styles.preguntaContainer}>
-                  <Text style={styles.preguntaTexto}>{preguntas[preguntaIndex].pregunta}</Text>
-                  <TouchableOpacity style={styles.buttonContainer} onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1}>
-                    <LinearGradient colors={['#FFDE59', '#FF914D']} style={styles.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                      <Text style={styles.buttonText}>Avanzar</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
+              <View style={styles.preguntaSection}>
+                <Text style={styles.preguntaTexto}>{preguntas[preguntaIndex].pregunta}</Text>
+                <TouchableOpacity style={styles.buttonContainer} onPress={avanzarPregunta} disabled={preguntaIndex >= preguntas.length - 1}>
+                  <LinearGradient colors={['#FFDE59', '#FF914D']} style={styles.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                    <Text style={styles.buttonText}>Avanzar</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
                 {preguntaIndex >= preguntas.length - 1 && (
                   <View style={styles.avanzarContainer}>
                     <Text style={styles.avanzarTexto}>El juego ya ha acabado, ¿Quiere pasar al siguiente juego?</Text>
@@ -214,29 +212,21 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   gameTitle: {
-    top: 65,
-    fontSize: 50,
+    fontSize: 30,
     fontFamily: 'serif',
     fontStyle: 'italic',
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-
-  preguntaContainer: {
     marginBottom: 20,
+  },
+  preguntaSection: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#FFD700',
-    borderRadius: 10,
-    backgroundColor: '#313131',
-    bottom: 100,
   },
   preguntaTexto: {
     fontSize: 18,
-    marginBottom: 10,
+    marginBottom: 20,
     color: '#FFFFFF',
+    textAlign: 'center',
   },
   avanzarContainer: {
     alignItems: 'center',
@@ -268,6 +258,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 18,
+  },
+  subtitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#FFDE59',
   },
 });
 

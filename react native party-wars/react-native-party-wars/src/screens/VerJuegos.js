@@ -20,8 +20,6 @@ const ViewGamesScreen = ({ route }) => {
     require('../assets/MonoArray4.jpg'),
     require('../assets/MonoArray5.jpg'),
     require('../assets/MonoArray6.jpg'),
-
-    // Agrega más imágenes según sea necesario
   ];
 
   useEffect(() => {
@@ -86,7 +84,6 @@ const ViewGamesScreen = ({ route }) => {
 
   const handleAddGame = async (juegoId) => {
     try {
-      // Añadir el usuario a la sala
       if (usuarioId) {
         const responseUsuario = await fetch(`http://192.168.1.90:3000/salas/${salaId}/usuarios/${usuarioId}`, {
           method: 'POST',
@@ -100,7 +97,6 @@ const ViewGamesScreen = ({ route }) => {
         }
       }
 
-      // Añadir el juego a la sala
       const responseJuego = await fetch(`http://192.168.1.90:3000/salas/${salaId}/juegos/${juegoId}`, {
         method: 'POST',
         headers: {
@@ -159,7 +155,6 @@ const ViewGamesScreen = ({ route }) => {
             <Picker.Item label="Seleccione una categoría" value="" />
             <Picker.Item label="Tablero" value="Tablero" />
             <Picker.Item label="Bebida" value="Bebida" />
-            {/* Agrega más categorías según sea necesario */}
           </Picker>
 
           <FlatList
@@ -167,6 +162,7 @@ const ViewGamesScreen = ({ route }) => {
             renderItem={renderGameItem}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.list}
+            nestedScrollEnabled={true}
           />
 
           <Text style={styles.createOwnText}>
@@ -202,11 +198,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     fontWeight: 'bold',
-
   },
   topSection: {
     flex: 1,
-
     top: 60,
     justifyContent: 'center',
     alignItems: 'center',
@@ -235,8 +229,7 @@ const styles = StyleSheet.create({
     width: '80%',
     marginVertical: 10,
     color: '#ffffff',
-        fontWeight: 'bold',
-
+    fontWeight: 'bold',
   },
   list: {
     padding: 10,
@@ -279,16 +272,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 16,
-    paddingHorizontal: 20,
-
+    paddingTop: 10,
   },
   createOwnLink: {
-    color: 'blue',
+    color: '#FFDE59',
+    textDecorationLine: 'underline',
   },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#313131',
   },
   text: {
     color: '#000000',
