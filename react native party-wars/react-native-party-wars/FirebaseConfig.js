@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {getStorage} from "firebase/storage";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD5s0zfI-_urwPm8Xm6sAiYLHAeXS3X6VA",
@@ -13,7 +13,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Verifica si Firebase Analytics es compatible
+isSupported().then((supported) => {
+  if (supported) {
+    // Solo inicializa Analytics si es compatible
+    const analytics = getAnalytics(app);
+  } else {
+  }
+}).catch((error) => {
+  console.error("Error al verificar el soporte de Firebase Analytics:", error);
+});
+
 const storage = getStorage(app);
 
 export { storage };
