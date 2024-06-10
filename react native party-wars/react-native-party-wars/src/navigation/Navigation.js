@@ -270,19 +270,20 @@ export default function Navigation() {
 const styles = StyleSheet.create({
   invisible: {},
   fabOptions: {
-    position: 'absolute',
+    position: 'absolute', 
     bottom: 80,
     left: 0,
-    right: 0,
+    right: 30,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
   },
   fab: {
-    marginRight: 150,
+    marginRight: 0,
     borderRadius: 25,
     bottom: 15,
     position: 'absolute', // Adjust half of the button's width to center it
+    left: -10,
   },
   fabButton: {
     backgroundColor: '#313131',
