@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain', // Para asegurarte de que la imagen se ajusta bien dentro del botón
   },
   fabButton1: {
-    backgroundColor: '#313131',
+    backgroundColor: '#313131', // boton abajo izq
     width: 60,
     height: 60,
     borderRadius: 40,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 60,
+    left: 60, //boton medio izq
     bottom: 10,
   },
   fabButton3: {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 87,
+    left: 87, //boton medio der
     bottom: 10,
   },
   fabButton4: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 70,
+    left: 70, //boton abajo der
     top: 55,
   },
   fabButton5: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 10,
+    left: 10,//boton arriba der
     top: -80,
   },
   fabButton6: {

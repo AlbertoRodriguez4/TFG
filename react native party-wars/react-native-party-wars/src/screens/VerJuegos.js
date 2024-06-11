@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -136,54 +136,52 @@ const ViewGamesScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.topSection}>
-          <Text style={styles.title}>Partida <Text style={styles.titleBold}>Privada</Text></Text>
-        </View>
+      <View style={styles.topSection}>
+        <Text style={styles.title}>Partida <Text style={styles.titleBold}>Privada</Text></Text>
+      </View>
 
-        <LinearGradient
-          colors={['#FFDE59', '#FF914D']}
-          style={styles.bottomSection}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+      <LinearGradient
+        colors={['#FFDE59', '#FF914D']}
+        style={styles.bottomSection}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Picker
+          selectedValue={categoria}
+          style={styles.picker}
+          onValueChange={(itemValue) => setCategoria(itemValue)}
         >
-          <Picker
-            selectedValue={categoria}
-            style={styles.picker}
-            onValueChange={(itemValue) => setCategoria(itemValue)}
+          <Picker.Item label="Seleccione una categoría" value="" />
+          <Picker.Item label="Tablero" value="Tablero" />
+          <Picker.Item label="Bebida" value="Bebida" />
+        </Picker>
+
+        <FlatList
+          data={games}
+          renderItem={renderGameItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.list}
+          nestedScrollEnabled={true}
+        />
+
+        <Text style={styles.createOwnText}>
+          Agrega los juegos a la sala al pinchar encima de ellos 
+        </Text>
+        <TouchableOpacity style={styles.createButton} onPress={handleCrearSala}>
+          <LinearGradient
+            colors={['#313131', '#313131']}
+            style={styles.createButton}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
-            <Picker.Item label="Seleccione una categoría" value="" />
-            <Picker.Item label="Tablero" value="Tablero" />
-            <Picker.Item label="Bebida" value="Bebida" />
-          </Picker>
-
-          <FlatList
-            data={games}
-            renderItem={renderGameItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.list}
-            nestedScrollEnabled={true}
-          />
-
-          <Text style={styles.createOwnText}>
-            Agrega los juegos a la sala al pinchar encima de ellos 
-          </Text>
-          <TouchableOpacity style={styles.createButton} onPress={handleCrearSala}>
-            <LinearGradient
-              colors={['#313131', '#313131']}
-              style={styles.createButton}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.createButtonText}>Crear Sala</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          
-          <Text style={styles.createOwnText}>
-            ¿No ves ningún juego que te convenza? <Text style={styles.createOwnLink} onPress={handleCrearJuego}>¡Crea el tuyo!</Text>
-          </Text>
-        </LinearGradient>
-      </ScrollView>
+            <Text style={styles.createButtonText}>Crear Sala</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+        
+        <Text style={styles.createOwnText}>
+          ¿No ves ningún juego que te convenza? <Text style={styles.createOwnLink} onPress={handleCrearJuego}>¡Crea el tuyo!</Text>
+        </Text>
+      </LinearGradient>
     </View>
   );
 };
@@ -201,20 +199,20 @@ const styles = StyleSheet.create({
   },
   topSection: {
     flex: 1,
-    top: 60,
+    top: 40, // Ajustado para que esté más arriba
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    marginBottom: 90,
+    marginBottom: 20, // Reducido para hacer más grande la sección de juegos
   },
   bottomSection: {
-    flex: 3,
+    flex: 10, // Aumentado para hacer la sección de juegos más grande
     paddingTop: 10,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     width: '100%',
     alignItems: 'center',
-    paddingBottom: 120,
+    paddingBottom: 20, // Reducido para hacer más pequeña la sección del footer
   },
   title: {
     fontSize: 30,
