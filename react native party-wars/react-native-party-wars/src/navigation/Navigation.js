@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 80,
+    left: 60,
     top: 55,
   },
   fabButton2: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 60, //boton medio izq
+    left: 40, //boton medio izq
     bottom: 10,
   },
   fabButton3: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: 10,//boton arriba der
+    left: -10,//boton arriba der
     top: -80,
   },
   fabButton6: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    left: -220,
+    left: -230,
     top: -80,
   },
 

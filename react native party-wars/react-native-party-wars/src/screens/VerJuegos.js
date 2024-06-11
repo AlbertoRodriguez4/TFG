@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 50,
     width: '100%',
     alignItems: 'center',
-    paddingBottom: 20, // Reducido para hacer más pequeña la sección del footer
+    paddingBottom: 10, // Reducido para hacer más pequeña la sección del footer
   },
   title: {
     fontSize: 30,

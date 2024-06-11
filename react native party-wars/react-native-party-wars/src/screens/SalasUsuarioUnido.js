@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,7 @@ const SalasUsuario = ({ route }) => {
     const [salasPrimero, setSalasPrimero] = useState([]);
     const [salasNoPrimero, setSalasNoPrimero] = useState([]);
     const [currentDay, setCurrentDay] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -33,6 +34,7 @@ const SalasUsuario = ({ route }) => {
                 setId(id);
             }
         } catch (error) {
+            console.error('Error al cargar los datos del usuario:', error);
         }
     };
 
@@ -43,6 +45,7 @@ const SalasUsuario = ({ route }) => {
             setSalas(data);
             guardarIdSalas(data);
         } catch (error) {
+            console.error('Error al obtener las salas del usuario:', error);
         }
     };
 
@@ -52,6 +55,7 @@ const SalasUsuario = ({ route }) => {
             await AsyncStorage.setItem('idSalas', JSON.stringify(ids));
             data.forEach((sala) => fetchUsuariosSala(sala.id));
         } catch (error) {
+            console.error('Error al guardar los IDs de las salas:', error);
         }
     };
 
@@ -65,6 +69,7 @@ const SalasUsuario = ({ route }) => {
                 setSalasNoPrimero((prevState) => [...prevState, salaId]);
             }
         } catch (error) {
+            console.error('Error al obtener los usuarios de la sala:', error);
         }
     };
 
@@ -74,6 +79,7 @@ const SalasUsuario = ({ route }) => {
             const data = await response.json();
             setEventos(data);
         } catch (error) {
+            console.error('Error al obtener los eventos del usuario:', error);
         }
     };
 
@@ -93,7 +99,15 @@ const SalasUsuario = ({ route }) => {
                 Alert.alert('Error', 'No se pudo salir de la sala.');
             }
         } catch (error) {
+            console.error('Error al salir de la sala:', error);
         }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchSalasUsuario();
+        await fetchEventosUsuario();
+        setRefreshing(false);
     };
 
     return (
@@ -105,10 +119,12 @@ const SalasUsuario = ({ route }) => {
         >
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Salas del Usuario</Text>
-
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContainer}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            >
                 {salas.map((sala) => (
                     <View key={sala.id} style={styles.salaContainer}>
                         <Text style={styles.salaNombre}>{sala.nombre}</Text>
@@ -158,16 +174,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         backgroundColor: '#313131',
     },
-    icon: {
-        width: 24,
-        height: 24,
-        tintColor: '#fff',
-    },
     headerTitle: {
         justifyContent: 'center',
         alignItems: 'center',
         textAlign: 'center',
-        
         color: '#fff',
         fontSize: 25,
         fontWeight: 'bold',
@@ -238,6 +248,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     eventoDescripcion: {
+       
         fontSize: 16,
         marginBottom: 10,
         color: '#fff',
