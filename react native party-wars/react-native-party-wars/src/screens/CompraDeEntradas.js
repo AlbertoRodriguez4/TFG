@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
+import { View, Text, Button, TextInput, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, Image, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -218,65 +218,68 @@ const CompraEntradas = ({ route }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        {!compraRealizada ? (
-          <>
-            <View style={styles.eventInfo}>
-              <Text style={styles.eventInfoText}>Localización del evento: {eventoInfo.localizacion}</Text>
-              <Text style={styles.eventInfoText}> </Text>
-              <Text style={styles.eventInfoText}>Fecha del evento: {eventoInfo.fechaEvento}</Text>
-              <Text style={styles.eventInfoText}> </Text>
+        <ScrollView  showsVerticalScrollIndicator={false}>
+          {!compraRealizada ? (
+            <>
+              <View style={styles.eventInfo}>
+                <Text style={styles.eventInfoText}>Localización del evento: {eventoInfo.localizacion}</Text>
+                <Text style={styles.eventInfoText}> </Text>
+                <Text style={styles.eventInfoText}>Fecha del evento: {eventoInfo.fechaEvento}</Text>
+                <Text style={styles.eventInfoText}> </Text>
 
-              {precioEntrada && (
-                <Text style={styles.eventInfoText}>Precio de la entrada: {precioEntrada}€</Text>
-              )}
+                {precioEntrada && (
+                  <Text style={styles.eventInfoText}>Precio de la entrada: {precioEntrada}€</Text>
+                )}
 
-              <Text style={styles.eventInfoText}>Costo total: {costoTotal}€</Text>
+                <Text style={styles.eventInfoText}>Costo total: {costoTotal}€</Text>
+              </View>
+              <View style={styles.counterContainer}>
+                <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(Math.max(0, cantidadEntradas - 1))}>
+                  <Text style={styles.buttonCustomText}>-</Text>
+                </TouchableOpacity>
+                <Text style={styles.counterText}>{cantidadEntradas}</Text>
+                <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(cantidadEntradas + 1)}>
+                  <Text style={styles.buttonCustomText}>+</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.paymentOptions}>
+                <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('card')}>
+                  <Text style={styles.paymentButtonText}>Pagar con Tarjeta</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('paypal')}>
+                  <Text style={styles.paymentButtonText}>Pagar con PayPal</Text>
+                </TouchableOpacity>
+              </View>
+              {paymentForm}
+              <TouchableOpacity style={styles.buttonContainer} onPress={handleCompra} disabled={loadingPayment}>
+                <LinearGradient
+                  colors={['#313131', '#313131']}
+                  style={styles.button}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.buttonText}>Confirmar Pago</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              {loadingPayment && <ActivityIndicator size="large" color="#0000ff" />}
+            </>
+          ) : (
+            <View style={styles.qrContainer}>
+              <QRCode value={qrValue} size={200} />
+              <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate('Main')}>
+                <LinearGradient
+                  colors={['#313131', '#313131']}
+                  style={styles.button}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.buttonText}>Volver a la pantalla principal</Text>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
-            <View style={styles.counterContainer}>
-              <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(Math.max(0, cantidadEntradas - 1))}>
-                <Text style={styles.buttonCustomText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.counterText}>{cantidadEntradas}</Text>
-              <TouchableOpacity style={styles.buttonCustom} onPress={() => setCantidadEntradas(cantidadEntradas + 1)}>
-                <Text style={styles.buttonCustomText}>+</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.paymentOptions}>
-              <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('card')}>
-                <Text style={styles.paymentButtonText}>Pagar con Tarjeta</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.paymentButton} onPress={() => setSelectedPaymentMethod('paypal')}>
-                <Text style={styles.paymentButtonText}>Pagar con PayPal</Text>
-              </TouchableOpacity>
-            </View>
-            {paymentForm}
-            <TouchableOpacity style={styles.buttonContainer} onPress={handleCompra} disabled={loadingPayment}>
-              <LinearGradient
-                colors={['#313131', '#313131']}
-                style={styles.button}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.buttonText}>Confirmar Pago</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            {loadingPayment && <ActivityIndicator size="large" color="#0000ff" />}
-          </>
-        ) : (
-          <View style={styles.qrContainer}>
-            <QRCode value={qrValue} size={200} />
-            <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate('Main')}>
-              <LinearGradient
-                colors={['#313131', '#313131']}
-                style={styles.button}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.buttonText}>Volver a la pantalla principal</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        )}
+          )}
+        </ScrollView>
+
       </LinearGradient>
     </View>
   );
@@ -328,6 +331,7 @@ const styles = StyleSheet.create({
   },
   counterContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -338,7 +342,8 @@ const styles = StyleSheet.create({
   },
   paymentOptions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     width: '80%',
     marginBottom: 20,
   },
